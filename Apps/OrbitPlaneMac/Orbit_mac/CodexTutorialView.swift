@@ -7,6 +7,7 @@ struct CodexTutorialView: View {
     @State private var selectedTab: CodexTab = .diff
     @State private var selectedStep = 1
     @State private var selectedFile = CodexTutorialDisplayModel.dummy.filePath
+    @State private var selectedAnchorId: String?
 
     private var model: CodexTutorialDisplayModel {
         eventSource.model
@@ -39,13 +40,15 @@ struct CodexTutorialView: View {
                     additions: model.additions,
                     deletions: model.deletions,
                     diff: model.diffLines,
-                    terminalLines: model.terminalLines
+                    terminalLines: model.terminalLines,
+                    selectedAnchorId: $selectedAnchorId
                 )
                 .frame(minWidth: 520)
 
                 CodexNarrativePanel(
                     model: model,
                     selectedStep: selectedStep,
+                    selectedAnchorId: selectedAnchorId,
                     teachingNotes: model.teachingNotes,
                     reviewFindings: model.reviewFindings
                 )
@@ -60,10 +63,12 @@ struct CodexTutorialView: View {
             eventSource.reload()
             selectedStep = model.activeStepId
             selectedFile = model.filePath
+            selectedAnchorId = model.defaultAnchorId
         }
         .onChange(of: model.sessionId) { _, _ in
             selectedStep = model.activeStepId
             selectedFile = model.filePath
+            selectedAnchorId = model.defaultAnchorId
         }
     }
 }
@@ -167,6 +172,11 @@ struct CodexTutorialDisplayModel {
 
     var activeStepId: Int {
         steps.last(where: { $0.state == .active })?.id ?? steps.first?.id ?? 1
+    }
+
+    var defaultAnchorId: String? {
+        teachingCases.last?.metadata.steps.first?.anchorIds.first
+            ?? teachingCases.last?.metadata.anchors.first?.anchorId
     }
 
     static let dummy: CodexTutorialDisplayModel = {
@@ -397,12 +407,18 @@ struct CodexTutorialDisplayModel {
                     lines.append(.init(
                         kind: .meta,
                         number: "",
-                        text: anchor.map { "\($0.filePath):\($0.startLine)-\($0.endLine)" } ?? snippet.anchorId
+                        text: anchor.map { "\($0.filePath):\($0.startLine)-\($0.endLine)" } ?? snippet.anchorId,
+                        anchorId: snippet.anchorId
                     ))
 
                     let startLine = anchor?.startLine ?? 1
                     for (offset, codeLine) in snippet.code.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
-                        lines.append(.init(kind: .context, number: "\(startLine + offset)", text: String(codeLine)))
+                        lines.append(.init(
+                            kind: .context,
+                            number: "\(startLine + offset)",
+                            text: String(codeLine),
+                            anchorId: snippet.anchorId
+                        ))
                     }
                 }
                 return lines
@@ -577,6 +593,14 @@ struct CodexDiffLine: Identifiable {
     let kind: DiffKind
     let number: String
     let text: String
+    let anchorId: String?
+
+    init(kind: DiffKind, number: String, text: String, anchorId: String? = nil) {
+        self.kind = kind
+        self.number = number
+        self.text = text
+        self.anchorId = anchorId
+    }
 
     static let samples: [CodexDiffLine] = [
         .init(kind: .meta, number: "", text: "policy/retry.swift"),
@@ -877,6 +901,7 @@ struct CodexWorkSurface: View {
     let deletions: Int
     let diff: [CodexDiffLine]
     let terminalLines: [CodexTerminalLine]
+    @Binding var selectedAnchorId: String?
 
     var body: some View {
         VSplitView {
@@ -891,7 +916,7 @@ struct CodexWorkSurface: View {
                 Group {
                     switch selectedTab {
                     case .diff:
-                        CodexDiffPanel(lines: diff)
+                        CodexDiffPanel(lines: diff, selectedAnchorId: $selectedAnchorId)
                     case .editor:
                         CodexEditorPanel()
                     case .tests:
@@ -963,12 +988,27 @@ struct CodexTabBar: View {
 
 struct CodexDiffPanel: View {
     let lines: [CodexDiffLine]
+    @Binding var selectedAnchorId: String?
 
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(lines) { line in
-                    CodexDiffRow(line: line)
+                    CodexDiffRow(
+                        line: line,
+                        isSelectedAnchor: line.anchorId != nil && line.anchorId == selectedAnchorId
+                    )
+                    .contentShape(Rectangle())
+                    .onHover { isHovered in
+                        if isHovered, let anchorId = line.anchorId {
+                            selectedAnchorId = anchorId
+                        }
+                    }
+                    .onTapGesture {
+                        if let anchorId = line.anchorId {
+                            selectedAnchorId = anchorId
+                        }
+                    }
                 }
             }
             .padding(.bottom, 14)
@@ -980,6 +1020,7 @@ struct CodexDiffPanel: View {
 
 struct CodexDiffRow: View {
     let line: CodexDiffLine
+    let isSelectedAnchor: Bool
 
     private var sign: String {
         switch line.kind {
@@ -999,6 +1040,10 @@ struct CodexDiffRow: View {
     }
 
     private var background: Color {
+        if isSelectedAnchor {
+            return OrbitTheme.neonCyan.opacity(0.105)
+        }
+
         switch line.kind {
         case .addition: return OrbitTheme.neonGreen.opacity(0.055)
         case .deletion: return OrbitTheme.neonPink.opacity(0.055)
@@ -1019,6 +1064,8 @@ struct CodexDiffRow: View {
             .tracking(0.8)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
+            .background(isSelectedAnchor ? OrbitTheme.neonCyan.opacity(0.08) : Color.clear)
+            .overlay(Rectangle().fill(isSelectedAnchor ? OrbitTheme.neonCyan : Color.clear).frame(width: 2), alignment: .leading)
             .overlay(Divider().background(OrbitTheme.border), alignment: .bottom)
         } else {
             HStack(spacing: 0) {
@@ -1041,6 +1088,7 @@ struct CodexDiffRow: View {
             }
             .frame(height: 24)
             .background(background)
+            .overlay(Rectangle().fill(isSelectedAnchor ? OrbitTheme.neonCyan : Color.clear).frame(width: 2), alignment: .leading)
         }
     }
 }
@@ -1176,6 +1224,7 @@ struct TerminalLine: View {
 struct CodexNarrativePanel: View {
     let model: CodexTutorialDisplayModel
     let selectedStep: Int
+    let selectedAnchorId: String?
     let teachingNotes: [OPCodexTeachingNotePayload]
     let reviewFindings: [CodexReviewFinding]
 
@@ -1195,6 +1244,12 @@ struct CodexNarrativePanel: View {
         guard let teachingCase = activeTeachingCase, !teachingCase.metadata.steps.isEmpty else {
             return nil
         }
+
+        if let selectedAnchorId,
+           let anchoredStep = teachingCase.metadata.steps.first(where: { $0.anchorIds.contains(selectedAnchorId) }) {
+            return anchoredStep
+        }
+
         let index = min(max(selectedStep - 1, 0), teachingCase.metadata.steps.count - 1)
         return teachingCase.metadata.steps[index]
     }
@@ -1208,10 +1263,30 @@ struct CodexNarrativePanel: View {
         return teachingCase.metadata.anchors.filter { anchorIds.contains($0.anchorId) }
     }
 
+    private var activeSnippet: OPTeachingCaseCodeSnippet? {
+        guard let teachingCase = activeTeachingCase else {
+            return nil
+        }
+
+        if let selectedAnchorId,
+           let selectedSnippet = teachingCase.codeSnippets.first(where: { $0.anchorId == selectedAnchorId }) {
+            return selectedSnippet
+        }
+
+        guard let anchorId = activeTeachingCaseStep?.anchorIds.first else {
+            return nil
+        }
+        return teachingCase.codeSnippets.first { $0.anchorId == anchorId }
+    }
+
+    private var activeConceptIds: [String] {
+        activeTeachingCaseStep?.conceptIds ?? activeTeachingCase?.metadata.conceptIds ?? []
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("STEP \(selectedStep) // \(activeTeachingCase == nil ? (model.isLiveStream ? "LOCAL JSONL" : "FALLBACK") : "HTML CASE")")
+                Text("STEP \(selectedStep) // \(activeTeachingCase == nil ? (model.isLiveStream ? "LOCAL JSONL" : "FALLBACK") : "ANCHOR TEACHING")")
                     .font(OrbitTheme.labelFont())
                     .tracking(OrbitTheme.labelTracking)
                     .foregroundStyle(OrbitTheme.textMuted)
@@ -1227,7 +1302,12 @@ struct CodexNarrativePanel: View {
                     .foregroundStyle(OrbitTheme.textSecondary)
 
                 if let teachingCase = activeTeachingCase {
-                    TeachingCaseSummaryCard(teachingCase: teachingCase, activeAnchors: activeAnchors)
+                    TeachingCaseSummaryCard(
+                        teachingCase: teachingCase,
+                        activeAnchors: activeAnchors,
+                        activeSnippet: activeSnippet,
+                        activeConceptIds: activeConceptIds
+                    )
                 }
 
                 if let activeStepPayload, !activeStepPayload.learningObjectives.isEmpty {
@@ -1257,8 +1337,11 @@ struct CodexNarrativePanel: View {
                 }
 
                 CodexCallout(
-                    label: activeTeachingCase == nil ? (activeNote?.tone.rawValue ?? "EVENT CACHE") : "ARTIFACT LINKED",
-                    text: activeTeachingCase.map { "\($0.metadata.steps.count) steps · \($0.metadata.anchors.count) anchors · \($0.sourceURL.lastPathComponent)" }
+                    label: activeTeachingCase == nil ? (activeNote?.tone.rawValue ?? "EVENT CACHE") : "HOVER LINK",
+                    text: activeTeachingCase.map {
+                        let anchor = selectedAnchorId ?? activeTeachingCaseStep?.anchorIds.first ?? "none"
+                        return "\(anchor) · \($0.sourceURL.lastPathComponent)"
+                    }
                         ?? "\(model.eventCount) events from \(model.sourceName)",
                     color: OrbitTheme.neonCyan
                 )
@@ -1343,6 +1426,8 @@ struct CodexCallout: View {
 struct TeachingCaseSummaryCard: View {
     let teachingCase: OPTeachingCaseArtifact
     let activeAnchors: [OPTeachingCaseAnchor]
+    let activeSnippet: OPTeachingCaseCodeSnippet?
+    let activeConceptIds: [String]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -1360,8 +1445,26 @@ struct TeachingCaseSummaryCard: View {
                 Spacer()
             }
 
-            if !teachingCase.metadata.conceptIds.isEmpty {
-                FlowTagRow(tags: teachingCase.metadata.conceptIds, color: OrbitTheme.neonCyan)
+            if !activeConceptIds.isEmpty {
+                FlowTagRow(tags: activeConceptIds, color: OrbitTheme.neonCyan)
+            }
+
+            if let activeSnippet {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("ACTIVE CODE")
+                        .font(OrbitTheme.labelFont())
+                        .tracking(OrbitTheme.labelTracking)
+                        .foregroundStyle(OrbitTheme.textMuted)
+
+                    Text(activeSnippet.code)
+                        .font(OrbitTheme.monoFont(12, weight: .medium))
+                        .foregroundStyle(OrbitTheme.textPrimary)
+                        .textSelection(.enabled)
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(OrbitTheme.bgVoid.opacity(0.72))
+                        .overlay(Rectangle().stroke(OrbitTheme.neonGreen.opacity(0.22), lineWidth: 1))
+                }
             }
 
             if !activeAnchors.isEmpty {
