@@ -219,6 +219,43 @@ import Testing
     #expect(snapshot.projection.teachingNotes.first?.title == "From emitter to MCP")
 }
 
+@Test func teachingCaseArtifactLinkProjectsAndLoadsHTMLMetadata() throws {
+    let eventURL = repoRoot()
+        .appendingPathComponent("CodexIntegration/fixtures/teaching_cases/python_variables_beginner.artifact_link_event.json")
+    let event = try OPCodexEventDecoder.decodeEvent(from: Data(contentsOf: eventURL))
+
+    var store = OPCodexEventStore()
+    try store.ingest([event])
+    let projection = OPCodexProjector.project(store)
+    let link = try projection.artifactLinks.first.unwrap()
+    let artifact = try OPTeachingCaseArtifactLoader.load(link: link)
+
+    #expect(projection.artifactLinks.count == 1)
+    #expect(link.artifactType == .teachingCaseHTML)
+    #expect(artifact.metadata.schemaVersion == OPTeachingCaseContract.schemaVersion)
+    #expect(artifact.metadata.caseId == "python-variables-beginner-001")
+    #expect(artifact.metadata.title == "第一次理解 Python 变量")
+    #expect(artifact.metadata.steps.first?.body.contains("name") == true)
+    #expect(artifact.metadata.anchors.first?.filePath == "examples/python_variables.py")
+}
+
+@Test func teachingCaseArtifactLoaderRejectsOutsideAllowedRoots() throws {
+    let link = OPCodexArtifactLinkedPayload(
+        artifactType: .teachingCaseHTML,
+        caseId: "unsafe",
+        path: "/tmp/unsafe.html",
+        title: "Unsafe",
+        conceptIds: [],
+        learnerLevel: "absolute_beginner"
+    )
+
+    #expect(throws: OPTeachingCaseArtifactError.pathOutsideAllowedRoots("/tmp/unsafe.html")) {
+        _ = try OPTeachingCaseArtifactLoader.load(link: link, allowedRootURLs: [
+            URL(fileURLWithPath: "/Volumes/2TB/Dev/OrbitPlane/.orbitplane/teaching-cases", isDirectory: true),
+        ])
+    }
+}
+
 private func makeEvent<T: Encodable>(
     id: String,
     sequence: Int,
@@ -251,4 +288,25 @@ private extension Optional where Wrapped == String {
         }
         return self
     }
+}
+
+private extension Optional {
+    func unwrap() throws -> Wrapped {
+        guard let self else {
+            throw DecodingError.valueNotFound(
+                Wrapped.self,
+                .init(codingPath: [], debugDescription: "Expected optional to contain a value")
+            )
+        }
+        return self
+    }
+}
+
+private func repoRoot() -> URL {
+    URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
 }

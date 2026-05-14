@@ -141,6 +141,8 @@ struct CodexTutorialDisplayModel {
     let terminalLines: [CodexTerminalLine]
     let tutorialSteps: [OPCodexTutorialStepPayload]
     let teachingNotes: [OPCodexTeachingNotePayload]
+    let teachingCases: [OPTeachingCaseArtifact]
+    let artifactLoadIssues: [String]
     let reviewFindings: [CodexReviewFinding]
     let sourceName: String
     let sourcePath: String
@@ -150,7 +152,10 @@ struct CodexTutorialDisplayModel {
     let isLiveStream: Bool
 
     var tutorialTitle: String {
-        teachingNotes.first?.title ?? (isLiveStream ? sessionId : "Waiting for Codex teaching events")
+        if let teachingCase = teachingCases.last {
+            return teachingCase.metadata.title
+        }
+        return teachingNotes.first?.title ?? (isLiveStream ? sessionId : "Waiting for Codex teaching events")
     }
 
     var tutorialSubtitle: String {
@@ -181,18 +186,21 @@ struct CodexTutorialDisplayModel {
         let filePath = diff?.filePath ?? (projection.events.isEmpty ? "policy/retry.swift" : "waiting for DIFF_UPDATED")
         let additions = diff?.stats.additions ?? 0
         let deletions = diff?.stats.deletions ?? 0
+        let artifactResult = Self.loadTeachingCases(from: projection.artifactLinks)
 
         self.sessionId = projection.session?.sessionId ?? "codex_dummy_001"
         self.branch = projection.session?.branch ?? "retry-with-cache"
         self.filePath = filePath
         self.additions = additions
         self.deletions = deletions
-        self.steps = Self.steps(from: projection)
-        self.files = Self.files(from: projection, fallbackFilePath: filePath)
+        self.steps = Self.steps(from: projection, teachingCases: artifactResult.cases)
+        self.files = Self.files(from: projection, teachingCases: artifactResult.cases, fallbackFilePath: filePath)
         self.diffLines = Self.diffLines(from: diff)
         self.terminalLines = Self.terminalLines(from: projection.terminalOutputs)
         self.tutorialSteps = projection.tutorialSteps
         self.teachingNotes = projection.teachingNotes
+        self.teachingCases = artifactResult.cases
+        self.artifactLoadIssues = artifactResult.issues
         self.reviewFindings = projection.reviewFindings.map {
             .init(id: $0.findingId, title: $0.title, body: $0.body, severity: $0.severity)
         }
@@ -226,6 +234,8 @@ struct CodexTutorialDisplayModel {
         ],
         tutorialSteps: [],
         teachingNotes: [],
+        teachingCases: [],
+        artifactLoadIssues: [],
         reviewFindings: [],
         sourceName: "fallback",
         sourcePath: "CodexTutorialDisplayModel.fallback",
@@ -247,6 +257,8 @@ struct CodexTutorialDisplayModel {
         terminalLines: [CodexTerminalLine],
         tutorialSteps: [OPCodexTutorialStepPayload],
         teachingNotes: [OPCodexTeachingNotePayload],
+        teachingCases: [OPTeachingCaseArtifact],
+        artifactLoadIssues: [String],
         reviewFindings: [CodexReviewFinding],
         sourceName: String,
         sourcePath: String,
@@ -266,6 +278,8 @@ struct CodexTutorialDisplayModel {
         self.terminalLines = terminalLines
         self.tutorialSteps = tutorialSteps
         self.teachingNotes = teachingNotes
+        self.teachingCases = teachingCases
+        self.artifactLoadIssues = artifactLoadIssues
         self.reviewFindings = reviewFindings
         self.sourceName = sourceName
         self.sourcePath = sourcePath
@@ -275,25 +289,36 @@ struct CodexTutorialDisplayModel {
         self.isLiveStream = isLiveStream
     }
 
-    private static func steps(from projection: OPCodexProjection) -> [CodexTutorialStep] {
-        let tutorialStepRows = projection.tutorialSteps.enumerated().map { index, step in
+    private static func steps(
+        from projection: OPCodexProjection,
+        teachingCases: [OPTeachingCaseArtifact]
+    ) -> [CodexTutorialStep] {
+        let caseSteps = teachingCases.last?.metadata.steps.enumerated().map { index, step in
             CodexTutorialStep(
                 id: index + 1,
                 title: step.title,
-                state: index == projection.tutorialSteps.count - 1 && projection.teachingNotes.isEmpty ? .active : .done
+                state: index == (teachingCases.last?.metadata.steps.count ?? 1) - 1 ? .active : .done
+            )
+        } ?? []
+
+        let tutorialStepRows = projection.tutorialSteps.enumerated().map { index, step in
+            CodexTutorialStep(
+                id: caseSteps.count + index + 1,
+                title: step.title,
+                state: caseSteps.isEmpty && index == projection.tutorialSteps.count - 1 && projection.teachingNotes.isEmpty ? .active : .done
             )
         }
-        let noteOffset = tutorialStepRows.count
+        let noteOffset = caseSteps.count + tutorialStepRows.count
         let noteSteps = projection.teachingNotes.enumerated().map { index, note in
             CodexTutorialStep(
                 id: noteOffset + index + 1,
                 title: note.title,
-                state: index == projection.teachingNotes.count - 1 ? .active : .done
+                state: caseSteps.isEmpty && index == projection.teachingNotes.count - 1 ? .active : .done
             )
         }
 
-        if !tutorialStepRows.isEmpty || !noteSteps.isEmpty {
-            return tutorialStepRows + noteSteps
+        if !caseSteps.isEmpty || !tutorialStepRows.isEmpty || !noteSteps.isEmpty {
+            return caseSteps + tutorialStepRows + noteSteps
         }
 
         if !projection.events.isEmpty {
@@ -306,13 +331,23 @@ struct CodexTutorialDisplayModel {
         return defaultSteps
     }
 
-    private static func files(from projection: OPCodexProjection, fallbackFilePath: String) -> [CodexFileChange] {
+    private static func files(
+        from projection: OPCodexProjection,
+        teachingCases: [OPTeachingCaseArtifact],
+        fallbackFilePath: String
+    ) -> [CodexFileChange] {
         let diffFiles = projection.diffs.map {
             CodexFileChange(path: $0.filePath, added: $0.stats.additions, removed: $0.stats.deletions)
         }
 
         if !diffFiles.isEmpty {
             return diffFiles
+        }
+
+        if let teachingCase = teachingCases.last, !teachingCase.metadata.anchors.isEmpty {
+            return teachingCase.metadata.anchors.map {
+                CodexFileChange(path: "\($0.filePath):\($0.startLine)-\($0.endLine)", added: 0, removed: 0)
+            }
         }
 
         if !projection.events.isEmpty {
@@ -324,6 +359,23 @@ struct CodexTutorialDisplayModel {
         return [
             .init(path: fallbackFilePath, added: 0, removed: 0),
         ]
+    }
+
+    private static func loadTeachingCases(
+        from links: [OPCodexArtifactLinkedPayload]
+    ) -> (cases: [OPTeachingCaseArtifact], issues: [String]) {
+        var cases: [OPTeachingCaseArtifact] = []
+        var issues: [String] = []
+
+        for link in links where link.artifactType == .teachingCaseHTML {
+            do {
+                cases.append(try OPTeachingCaseArtifactLoader.load(link: link))
+            } catch {
+                issues.append("\(link.title): \(String(describing: error))")
+            }
+        }
+
+        return (cases, issues)
     }
 
     private static func diffLines(from payload: OPCodexDiffPayload?) -> [CodexDiffLine] {
@@ -1089,23 +1141,48 @@ struct CodexNarrativePanel: View {
         model.tutorialSteps.last
     }
 
+    private var activeTeachingCase: OPTeachingCaseArtifact? {
+        model.teachingCases.last
+    }
+
+    private var activeTeachingCaseStep: OPTeachingCaseStep? {
+        guard let teachingCase = activeTeachingCase, !teachingCase.metadata.steps.isEmpty else {
+            return nil
+        }
+        let index = min(max(selectedStep - 1, 0), teachingCase.metadata.steps.count - 1)
+        return teachingCase.metadata.steps[index]
+    }
+
+    private var activeAnchors: [OPTeachingCaseAnchor] {
+        guard let teachingCase = activeTeachingCase, let step = activeTeachingCaseStep else {
+            return []
+        }
+
+        let anchorIds = Set(step.anchorIds)
+        return teachingCase.metadata.anchors.filter { anchorIds.contains($0.anchorId) }
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("STEP \(selectedStep) // \(model.isLiveStream ? "LOCAL JSONL" : "FALLBACK")")
+                Text("STEP \(selectedStep) // \(activeTeachingCase == nil ? (model.isLiveStream ? "LOCAL JSONL" : "FALLBACK") : "HTML CASE")")
                     .font(OrbitTheme.labelFont())
                     .tracking(OrbitTheme.labelTracking)
                     .foregroundStyle(OrbitTheme.textMuted)
 
-                Text(activeNote?.title ?? model.tutorialTitle)
+                Text(activeTeachingCaseStep?.title ?? activeNote?.title ?? model.tutorialTitle)
                 .font(.system(size: 24, weight: .semibold))
                 .foregroundStyle(OrbitTheme.textPrimary)
                 .lineLimit(3)
 
-                Text(activeNote?.body ?? activeStepPayload?.summary ?? "No teaching note has arrived yet. OrbitPlane is watching the local Codex event cache for MCP-generated tutorial events.")
+                Text(activeTeachingCaseStep?.body ?? activeNote?.body ?? activeStepPayload?.summary ?? "No teaching note has arrived yet. OrbitPlane is watching the local Codex event cache for MCP-generated tutorial events.")
                     .font(.system(size: 14))
                     .lineSpacing(4)
                     .foregroundStyle(OrbitTheme.textSecondary)
+
+                if let teachingCase = activeTeachingCase {
+                    TeachingCaseSummaryCard(teachingCase: teachingCase, activeAnchors: activeAnchors)
+                }
 
                 if let activeStepPayload, !activeStepPayload.learningObjectives.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
@@ -1120,9 +1197,23 @@ struct CodexNarrativePanel: View {
                     }
                 }
 
+                if !model.artifactLoadIssues.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("ARTIFACT ISSUES")
+                            .font(OrbitTheme.labelFont())
+                            .tracking(OrbitTheme.labelTracking)
+                            .foregroundStyle(OrbitTheme.textMuted)
+
+                        ForEach(model.artifactLoadIssues, id: \.self) { issue in
+                            CodexCallout(label: "LOAD FAILED", text: issue, color: OrbitTheme.neonPink)
+                        }
+                    }
+                }
+
                 CodexCallout(
-                    label: activeNote?.tone.rawValue ?? "EVENT CACHE",
-                    text: "\(model.eventCount) events from \(model.sourceName)",
+                    label: activeTeachingCase == nil ? (activeNote?.tone.rawValue ?? "EVENT CACHE") : "ARTIFACT LINKED",
+                    text: activeTeachingCase.map { "\($0.metadata.steps.count) steps · \($0.metadata.anchors.count) anchors · \($0.sourceURL.lastPathComponent)" }
+                        ?? "\(model.eventCount) events from \(model.sourceName)",
                     color: OrbitTheme.neonCyan
                 )
 
@@ -1200,6 +1291,94 @@ struct CodexCallout: View {
         .padding(14)
         .background(color.opacity(0.045))
         .overlay(Rectangle().stroke(color.opacity(0.25), lineWidth: 1))
+    }
+}
+
+struct TeachingCaseSummaryCard: View {
+    let teachingCase: OPTeachingCaseArtifact
+    let activeAnchors: [OPTeachingCaseAnchor]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Text(teachingCase.metadata.language.uppercased())
+                    .font(OrbitTheme.labelFont(10, weight: .semibold))
+                    .tracking(1.4)
+                    .foregroundStyle(OrbitTheme.neonGreen)
+
+                Text(teachingCase.metadata.learnerLevel.uppercased())
+                    .font(OrbitTheme.labelFont(10, weight: .semibold))
+                    .tracking(1.4)
+                    .foregroundStyle(OrbitTheme.textMuted)
+
+                Spacer()
+            }
+
+            if !teachingCase.metadata.conceptIds.isEmpty {
+                FlowTagRow(tags: teachingCase.metadata.conceptIds, color: OrbitTheme.neonCyan)
+            }
+
+            if !activeAnchors.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("CODE ANCHORS")
+                        .font(OrbitTheme.labelFont())
+                        .tracking(OrbitTheme.labelTracking)
+                        .foregroundStyle(OrbitTheme.textMuted)
+
+                    ForEach(activeAnchors, id: \.anchorId) { anchor in
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("\(anchor.filePath):\(anchor.startLine)-\(anchor.endLine)")
+                                .font(OrbitTheme.monoFont(11, weight: .semibold))
+                                .foregroundStyle(OrbitTheme.textPrimary)
+
+                            HStack(spacing: 6) {
+                                if let anchorKind = anchor.anchorKind {
+                                    Text(anchorKind.uppercased())
+                                }
+                                if let snippetHash = anchor.snippetHash {
+                                    Text(snippetHash)
+                                }
+                            }
+                            .font(OrbitTheme.labelFont(9, weight: .medium))
+                            .tracking(1.0)
+                            .foregroundStyle(OrbitTheme.textMuted)
+                        }
+                        .padding(10)
+                        .background(OrbitTheme.bgVoid.opacity(0.58))
+                        .overlay(Rectangle().stroke(OrbitTheme.neonCyan.opacity(0.22), lineWidth: 1))
+                    }
+                }
+            }
+        }
+        .padding(14)
+        .background(OrbitTheme.neonCyan.opacity(0.035))
+        .overlay(Rectangle().stroke(OrbitTheme.neonCyan.opacity(0.24), lineWidth: 1))
+    }
+}
+
+struct FlowTagRow: View {
+    let tags: [String]
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(tags.prefix(4), id: \.self) { tag in
+                Text(tag)
+                    .font(OrbitTheme.labelFont(9, weight: .semibold))
+                    .tracking(1.0)
+                    .foregroundStyle(color)
+                    .padding(.horizontal, 7)
+                    .frame(height: 20)
+                    .background(color.opacity(0.055))
+                    .overlay(Rectangle().stroke(color.opacity(0.24), lineWidth: 1))
+            }
+
+            if tags.count > 4 {
+                Text("+\(tags.count - 4)")
+                    .font(OrbitTheme.labelFont(9, weight: .semibold))
+                    .foregroundStyle(OrbitTheme.textMuted)
+            }
+        }
     }
 }
 

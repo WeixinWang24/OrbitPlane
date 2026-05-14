@@ -115,6 +115,7 @@ public struct OPCodexProjection: Equatable, Sendable {
     public var teachingNotes: [OPCodexTeachingNotePayload]
     public var reviewFindings: [OPCodexReviewFindingPayload]
     public var terminalOutputs: [OPCodexTerminalOutputPayload]
+    public var artifactLinks: [OPCodexArtifactLinkedPayload]
 
     public init(
         session: OPCodexSessionRef?,
@@ -123,7 +124,8 @@ public struct OPCodexProjection: Equatable, Sendable {
         tutorialSteps: [OPCodexTutorialStepPayload],
         teachingNotes: [OPCodexTeachingNotePayload],
         reviewFindings: [OPCodexReviewFindingPayload],
-        terminalOutputs: [OPCodexTerminalOutputPayload]
+        terminalOutputs: [OPCodexTerminalOutputPayload],
+        artifactLinks: [OPCodexArtifactLinkedPayload]
     ) {
         self.session = session
         self.events = events
@@ -132,6 +134,7 @@ public struct OPCodexProjection: Equatable, Sendable {
         self.teachingNotes = teachingNotes
         self.reviewFindings = reviewFindings
         self.terminalOutputs = terminalOutputs
+        self.artifactLinks = artifactLinks
     }
 }
 
@@ -156,6 +159,9 @@ public enum OPCodexProjector {
             },
             terminalOutputs: events.compactMap {
                 decodePayload(OPCodexTerminalOutputPayload.self, from: $0, matching: .terminalOutput)
+            },
+            artifactLinks: events.compactMap {
+                decodePayload(OPCodexArtifactLinkedPayload.self, from: $0, matching: .artifactLinked)
             }
         )
     }

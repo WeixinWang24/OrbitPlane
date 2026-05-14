@@ -244,6 +244,129 @@ public struct OPCodexTutorialStepPayload: Codable, Hashable, Sendable {
     }
 }
 
+public enum OPCodexArtifactType: String, Codable, Hashable, Sendable {
+    case teachingCaseHTML = "TEACHING_CASE_HTML"
+}
+
+public struct OPCodexArtifactLinkedPayload: Codable, Hashable, Sendable {
+    public var artifactType: OPCodexArtifactType
+    public var caseId: String
+    public var path: String
+    public var title: String
+    public var conceptIds: [String]
+    public var learnerLevel: String
+
+    public init(
+        artifactType: OPCodexArtifactType,
+        caseId: String,
+        path: String,
+        title: String,
+        conceptIds: [String],
+        learnerLevel: String
+    ) {
+        self.artifactType = artifactType
+        self.caseId = caseId
+        self.path = path
+        self.title = title
+        self.conceptIds = conceptIds
+        self.learnerLevel = learnerLevel
+    }
+}
+
+public enum OPTeachingCaseContract {
+    public static let schemaVersion = "orbitplane.teaching.case.v1"
+}
+
+public struct OPTeachingCaseMetadata: Codable, Hashable, Sendable {
+    public var schemaVersion: String
+    public var caseId: String
+    public var title: String
+    public var language: String
+    public var learnerLevel: String
+    public var conceptIds: [String]
+    public var evidenceEventIds: [String]
+    public var anchors: [OPTeachingCaseAnchor]
+    public var steps: [OPTeachingCaseStep]
+
+    public init(
+        schemaVersion: String = OPTeachingCaseContract.schemaVersion,
+        caseId: String,
+        title: String,
+        language: String,
+        learnerLevel: String,
+        conceptIds: [String],
+        evidenceEventIds: [String] = [],
+        anchors: [OPTeachingCaseAnchor],
+        steps: [OPTeachingCaseStep]
+    ) {
+        self.schemaVersion = schemaVersion
+        self.caseId = caseId
+        self.title = title
+        self.language = language
+        self.learnerLevel = learnerLevel
+        self.conceptIds = conceptIds
+        self.evidenceEventIds = evidenceEventIds
+        self.anchors = anchors
+        self.steps = steps
+    }
+}
+
+public struct OPTeachingCaseAnchor: Codable, Hashable, Sendable {
+    public var anchorId: String
+    public var filePath: String
+    public var commit: String?
+    public var startLine: Int
+    public var endLine: Int
+    public var symbol: String?
+    public var anchorKind: String?
+    public var snippetHash: String?
+
+    public init(
+        anchorId: String,
+        filePath: String,
+        commit: String? = nil,
+        startLine: Int,
+        endLine: Int,
+        symbol: String? = nil,
+        anchorKind: String? = nil,
+        snippetHash: String? = nil
+    ) {
+        self.anchorId = anchorId
+        self.filePath = filePath
+        self.commit = commit
+        self.startLine = startLine
+        self.endLine = endLine
+        self.symbol = symbol
+        self.anchorKind = anchorKind
+        self.snippetHash = snippetHash
+    }
+}
+
+public struct OPTeachingCaseStep: Codable, Hashable, Sendable {
+    public var stepId: String
+    public var title: String
+    public var body: String
+    public var anchorIds: [String]
+    public var conceptIds: [String]
+    public var evidenceEventIds: [String]
+
+    public init(
+        stepId: String,
+        title: String,
+        body: String,
+        anchorIds: [String],
+        conceptIds: [String],
+        evidenceEventIds: [String] = []
+    ) {
+        self.stepId = stepId
+        self.title = title
+        self.body = body
+        self.anchorIds = anchorIds
+        self.conceptIds = conceptIds
+        self.evidenceEventIds = evidenceEventIds
+    }
+}
+
 public enum OPCodexReviewSeverity: String, Codable, Hashable, Sendable {
     case info = "INFO"
     case warning = "WARNING"
