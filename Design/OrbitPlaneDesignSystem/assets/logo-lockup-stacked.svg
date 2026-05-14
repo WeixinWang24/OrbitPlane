@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 200" fill="none">
+  <defs>
+    
+    <filter id="ll-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.4" result="b"></feGaussianBlur>
+      <feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+    </filter>
+  </defs>
+
+  
+  <g class="mono" font-size="9" letter-spacing="0.28em" fill="#5A6580">
+    <text x="20" y="22">┌─ AGT.FLEET ──────────────────────┐</text>
+    <text x="20" y="184">└─ v3.2.1 · MISSION CONTROL // AI ─┘</text>
+  </g>
+
+  
+  <g transform="translate(108 50)" filter="url(#ll-glow)">
+    <path d="M32 2 L58 17 L58 47 L32 62 L6 47 L6 17 Z" stroke="#8B5CF6" stroke-width="1.25" fill="none" opacity="0.5"></path>
+    <path d="M32 8 L53 20 L53 44 L32 56 L11 44 L11 20 Z" stroke="#A98DF9" stroke-width="1.1" fill="rgba(139,92,246,0.08)"></path>
+    <g stroke="#A98DF9" stroke-width="1.25">
+      <path d="M4 17 L6 17 M6 15 L6 17"></path>
+      <path d="M60 17 L58 17 M58 15 L58 17"></path>
+      <path d="M4 47 L6 47 M6 49 L6 47"></path>
+      <path d="M60 47 L58 47 M58 49 L58 47"></path>
+    </g>
+    <ellipse cx="32" cy="32" rx="22" ry="9" stroke="#A98DF9" stroke-width="1" fill="none" transform="rotate(-18 32 32)" opacity="0.75"></ellipse>
+    <ellipse cx="32" cy="32" rx="18" ry="22" stroke="#8B5CF6" stroke-width="0.9" fill="none" stroke-dasharray="2 3" opacity="0.45"></ellipse>
+    <g stroke="#A98DF9" stroke-width="0.7" opacity="0.55">
+      <line x1="32" y1="14" x2="32" y2="20"></line>
+      <line x1="32" y1="44" x2="32" y2="50"></line>
+      <line x1="14" y1="32" x2="20" y2="32"></line>
+      <line x1="44" y1="32" x2="50" y2="32"></line>
+    </g>
+    <g transform="translate(32 32)">
+      <path d="M-7 4 L0 -7 L7 4 L0 1 Z" fill="#A98DF9"></path>
+    </g>
+    <circle cx="52" cy="22" r="2" fill="#B8FF3C"></circle>
+    <circle cx="14" cy="44" r="1.3" fill="#FF2E8E"></circle>
+  </g>
+
+  
+  <g transform="translate(140 140)">
+    <text x="-58" y="0" class="scifi" font-size="20" fill="#E4ECF7">ORBIT</text>
+    <g transform="translate(0 -5)" filter="url(#ll-glow)">
+      <path d="M0 -5 L5 0 L0 5 L-5 0 Z" fill="#A98DF9"></path>
+    </g>
+    <text x="10" y="0" class="scifi" font-size="20" fill="#E4ECF7">PLANE</text>
+    <line x1="-90" y1="-6" x2="90" y2="-6" stroke="#0A0D14" stroke-width="2"></line>
+  </g>
+</svg>

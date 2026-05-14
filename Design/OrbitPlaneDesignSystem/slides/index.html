@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>OrbitPlane · Deck template</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="icon" type="image/svg+xml" href="../assets/logo-mark.svg">
+<script src="deck-stage.js"></script>
+
+<style>
+  body { margin: 0; background: #000; }
+  deck-stage { --stage-width: 1920px; --stage-height: 1080px; }
+
+  section {
+    width: 1920px; height: 1080px;
+    background: var(--op-base);
+    color: var(--op-fg-1);
+    font-family: var(--op-font-display);
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  /* universal scanline overlay */
+  section::after {
+    content: "";
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(to bottom, transparent 0 3px, rgba(255,255,255,0.012) 3px 4px);
+  }
+
+  /* universal chrome */
+  .chrome { position: absolute; left: 60px; right: 60px; display: flex; align-items: center; gap: 18px; }
+  .chrome.top { top: 40px; }
+  .chrome.bot { bottom: 40px; }
+  .chrome .lbl { font-family: var(--op-font-mono); font-size: 18px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--op-fg-3); }
+  .chrome .lbl .accent { color: var(--op-cyan); }
+  .chrome .num { margin-left: auto; font-family: var(--op-font-mono); font-size: 18px; letter-spacing: 0.16em; color: var(--op-fg-3); }
+  .chrome .logo { display: flex; align-items: center; gap: 14px; }
+  .chrome .logo .word { font-family: var(--op-font-mono); font-size: 22px; font-weight: 700; letter-spacing: 0.16em; color: var(--op-fg-1); }
+
+  .corner-bracket {
+    position: absolute; width: 32px; height: 32px;
+    border: 2px solid var(--op-cyan); pointer-events: none;
+  }
+  .cb-tl { top: 40px; left: 60px; border-right: none; border-bottom: none; }
+  .cb-tr { top: 40px; right: 60px; border-left: none; border-bottom: none; }
+  .cb-bl { bottom: 40px; left: 60px; border-right: none; border-top: none; }
+  .cb-br { bottom: 40px; right: 60px; border-left: none; border-top: none; }
+
+  /* ============ COVER ============ */
+  .cover {
+    background:
+      radial-gradient(ellipse 1400px 900px at 60% 60%, rgba(0,229,255,0.10), transparent),
+      radial-gradient(ellipse 800px 600px at 20% 20%, rgba(139,92,246,0.07), transparent),
+      var(--op-base);
+  }
+  .cover .lead-label { position: absolute; top: 200px; left: 100px; font-family: var(--op-font-mono); font-size: 22px; letter-spacing: 0.22em; color: var(--op-fg-3); text-transform: uppercase; }
+  .cover h1 {
+    position: absolute; left: 100px; top: 260px; right: 100px;
+    margin: 0; font-size: 220px; line-height: 0.95; letter-spacing: -0.04em; font-weight: 600;
+    color: var(--op-fg-1);
+  }
+  .cover h1 .accent { color: var(--op-cyan); }
+  .cover .sub { position: absolute; left: 100px; top: 770px; right: 100px;
+    font-family: var(--op-font-display); font-size: 40px; line-height: 1.25; color: var(--op-fg-2); max-width: 1200px;
+  }
+  .cover .orbit-bg { position: absolute; right: -200px; top: 120px; width: 1200px; height: 1200px; opacity: 0.4; }
+
+  /* ============ SECTION ============ */
+  .section-header {
+    background: var(--op-elev-1);
+    display: flex; flex-direction: column; justify-content: center; padding: 0 100px;
+  }
+  .section-header .idx { font-family: var(--op-font-mono); font-size: 240px; line-height: 1; color: rgba(0,229,255,0.18); font-weight: 700; letter-spacing: -0.04em; position: absolute; right: 80px; bottom: 80px; }
+  .section-header .eyebrow { font-family: var(--op-font-mono); font-size: 22px; letter-spacing: 0.22em; color: var(--op-cyan); text-transform: uppercase; }
+  .section-header h1 { margin: 24px 0 0; font-size: 180px; line-height: 1; letter-spacing: -0.04em; font-weight: 600; color: var(--op-fg-1); max-width: 1500px; }
+  .section-header .rule { width: 240px; height: 2px; background: var(--op-cyan); margin-top: 40px; box-shadow: 0 0 14px var(--op-cyan-glow); }
+
+  /* ============ STAT ============ */
+  .stat { display: grid; grid-template-rows: auto 1fr auto; padding: 140px 100px 100px; }
+  .stat .eyebrow { font-family: var(--op-font-mono); font-size: 22px; letter-spacing: 0.22em; color: var(--op-fg-3); text-transform: uppercase; }
+  .stat .big { font-family: var(--op-font-mono); font-size: 540px; line-height: 0.85; font-weight: 700; letter-spacing: -0.05em; color: var(--op-fg-1); }
+  .stat .big .accent { color: var(--op-cyan); text-shadow: 0 0 60px var(--op-cyan-glow); }
+  .stat .body { font-family: var(--op-font-display); font-size: 44px; line-height: 1.25; color: var(--op-fg-2); max-width: 1400px; }
+
+  /* ============ COMPARE ============ */
+  .compare { display: grid; grid-template-rows: auto 1fr; padding: 140px 100px 100px; gap: 60px; }
+  .compare .eyebrow { font-family: var(--op-font-mono); font-size: 22px; letter-spacing: 0.22em; color: var(--op-fg-3); text-transform: uppercase; }
+  .compare h2 { margin: 16px 0 0; font-size: 96px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; color: var(--op-fg-1); max-width: 1500px; }
+  .compare .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .compare .col { border: 1px solid var(--op-line); padding: 48px 48px 56px; position: relative; }
+  .compare .col.bad { background: rgba(255,46,142,0.04); border-color: rgba(255,46,142,0.25); }
+  .compare .col.good { background: rgba(0,229,255,0.04); border-color: rgba(0,229,255,0.3); box-shadow: 0 0 40px -16px var(--op-cyan-glow); }
+  .compare .col .tag { font-family: var(--op-font-mono); font-size: 18px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .compare .col.bad .tag { color: var(--op-magenta); }
+  .compare .col.good .tag { color: var(--op-cyan); }
+  .compare .col h3 { margin: 20px 0 28px; font-size: 60px; line-height: 1.1; font-weight: 600; letter-spacing: -0.02em; color: var(--op-fg-1); }
+  .compare .col ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 18px; }
+  .compare .col li { font-family: var(--op-font-display); font-size: 30px; line-height: 1.35; color: var(--op-fg-2); padding-left: 36px; position: relative; }
+  .compare .col li::before { content: "·"; font-family: var(--op-font-mono); position: absolute; left: 8px; top: -6px; font-size: 48px; }
+  .compare .col.good li::before { color: var(--op-cyan); }
+  .compare .col.bad li::before { color: var(--op-magenta); }
+
+  /* ============ QUOTE ============ */
+  .quote { display: flex; flex-direction: column; justify-content: center; padding: 0 200px; }
+  .quote .mark { font-family: var(--op-font-mono); color: var(--op-cyan); font-size: 220px; line-height: 0.5; margin-bottom: 40px; }
+  .quote blockquote { margin: 0; font-family: var(--op-font-display); font-size: 84px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 500; color: var(--op-fg-1); max-width: 1500px; }
+  .quote .cite { margin-top: 60px; font-family: var(--op-font-mono); font-size: 22px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--op-fg-3); }
+  .quote .cite .name { color: var(--op-cyan); }
+
+  /* ============ CLOSING ============ */
+  .closing {
+    background:
+      radial-gradient(ellipse 1200px 800px at 50% 70%, rgba(0,229,255,0.12), transparent),
+      var(--op-base);
+    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+  }
+  .closing .eyebrow { font-family: var(--op-font-mono); font-size: 22px; letter-spacing: 0.22em; color: var(--op-fg-3); text-transform: uppercase; }
+  .closing h1 { margin: 30px 0 60px; font-size: 200px; line-height: 0.95; letter-spacing: -0.04em; font-weight: 600; color: var(--op-fg-1); }
+  .closing h1 .accent { color: var(--op-cyan); }
+  .closing .stack { display: flex; flex-direction: column; gap: 16px; font-family: var(--op-font-mono); font-size: 32px; letter-spacing: 0.06em; color: var(--op-fg-2); }
+  .closing .stack .caret { color: var(--op-cyan); animation: opBlink 1s steps(2) infinite; }
+  .closing .ascii { margin-top: 80px; font-family: var(--op-font-mono); font-size: 18px; color: var(--op-fg-3); letter-spacing: 0.3em; }
+
+</style>
+</head>
+
+<body>
+
+<deck-stage>
+
+  <!-- ============ 01 COVER ============ -->
+  <section class="cover" data-screen-label="01 Cover">
+    <img class="orbit-bg" src="../assets/orbit-map.svg" alt="" />
+    <span class="corner-bracket cb-tl"></span>
+    <span class="corner-bracket cb-tr"></span>
+    <span class="corner-bracket cb-bl"></span>
+    <span class="corner-bracket cb-br"></span>
+
+    <header class="chrome top">
+      <div class="logo">
+        <img src="../assets/logo-mark.svg" width="40" height="40" />
+        <span class="word">ORBITPLANE</span>
+      </div>
+      <span class="num">v3.2.1 // 2030-Q2</span>
+    </header>
+
+    <span class="lead-label">[ q2 release · internal ]</span>
+    <h1>Mission<br/>control<span class="accent">.</span></h1>
+    <p class="sub">A new flight deck for AI agents — watch, intervene, replay, graduate. Built for operators who run fleets, not chatbots.</p>
+
+    <footer class="chrome bot">
+      <span class="lbl"><span class="accent">▌</span>&nbsp; cover // 01 of 06</span>
+      <span class="num">2030-05-14 · 14:02 UTC</span>
+    </footer>
+  </section>
+
+  <!-- ============ 02 SECTION HEADER ============ -->
+  <section class="section-header" data-screen-label="02 Section header">
+    <span class="idx">02</span>
+    <span class="eyebrow">// the problem</span>
+    <h1>Your agents work alone. So do you.</h1>
+    <span class="rule"></span>
+
+    <footer class="chrome bot">
+      <span class="lbl">orbitplane // <span class="accent">section</span></span>
+      <span class="num">02 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ============ 03 STAT ============ -->
+  <section class="stat" data-screen-label="03 Stat">
+    <span class="eyebrow">// signal</span>
+    <div class="big">14<span class="accent">%</span></div>
+    <p class="body">of agent runs end in silent failure modes that operators never see — until a customer notices first. The deck surfaces every one.</p>
+
+    <footer class="chrome bot">
+      <span class="lbl">stat // <span class="accent">silent failures</span></span>
+      <span class="num">03 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ============ 04 COMPARE ============ -->
+  <section class="compare" data-screen-label="04 Comparison">
+    <div>
+      <span class="eyebrow">// before / after</span>
+      <h2>What changes when you put agents on a deck.</h2>
+    </div>
+    <div class="grid">
+      <div class="col bad">
+        <span class="tag">▲ before</span>
+        <h3>Black-box agents</h3>
+        <ul>
+          <li>Failure mode = customer complaint</li>
+          <li>Logs scattered across runtimes</li>
+          <li>Replays mean re-running prod</li>
+          <li>Interventions live in DMs</li>
+        </ul>
+      </div>
+      <div class="col good">
+        <span class="tag">◉ after</span>
+        <h3>On the deck</h3>
+        <ul>
+          <li>Live trace per agent, all in one pane</li>
+          <li>Sub-second uplink, no log diving</li>
+          <li>Sandboxed replay against any past run</li>
+          <li>Interventions graduate to policy</li>
+        </ul>
+      </div>
+    </div>
+
+    <footer class="chrome bot">
+      <span class="lbl">compare // <span class="accent">before / after</span></span>
+      <span class="num">04 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ============ 05 QUOTE ============ -->
+  <section class="quote" data-screen-label="05 Quote">
+    <span class="corner-bracket cb-tl"></span>
+    <span class="corner-bracket cb-br"></span>
+
+    <div class="mark">"</div>
+    <blockquote>The first time I watched an agent recover from a tool timeout on its own — and saw the operator graduate that fix in two clicks — I understood what mission control meant.</blockquote>
+    <div class="cite"><span class="name">M. Okafor</span> · staff engineer · platform · 2030</div>
+
+    <footer class="chrome bot">
+      <span class="lbl">quote // <span class="accent">field</span></span>
+      <span class="num">05 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ============ 06 CLOSING ============ -->
+  <section class="closing" data-screen-label="06 Closing">
+    <span class="corner-bracket cb-tl"></span>
+    <span class="corner-bracket cb-tr"></span>
+    <span class="corner-bracket cb-bl"></span>
+    <span class="corner-bracket cb-br"></span>
+
+    <span class="eyebrow">// q2 ships</span>
+    <h1>Take the<br/>deck<span class="accent">.</span></h1>
+    <div class="stack">
+      <div>$ orbit deploy --fleet primary<span class="caret">▌</span></div>
+      <div style="color: var(--op-fg-3); font-size: 22px;">orbitplane.io · docs · #orbit-launch</div>
+    </div>
+    <div class="ascii">[ ◉ ─ ─ ─ ─ ─ ─ ─ ◉ ─ ─ ─ ─ ─ ─ ─ ◉ ]</div>
+  </section>
+
+</deck-stage>
+
+</body></html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--op-base);color:var(--op-fg-1);font-family:var(--op-font-display);}
+  .wrap{padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;}
+  .lbl{font-family:var(--op-font-mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--op-fg-3);}
+  .col{display:flex;flex-direction:column;gap:8px;}
+
+  /* radii row */
+  .radii{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+  .r{position:relative;height:64px;display:flex;align-items:center;justify-content:center;border:1px solid var(--op-cyan);background:rgba(0,229,255,0.04);box-shadow:0 0 12px -6px var(--op-cyan-glow);}
+  .r .v{font-family:var(--op-font-mono);font-size:10px;color:var(--op-cyan);letter-spacing:0.08em;}
+  .r .n{position:absolute;top:-14px;left:0;font-family:var(--op-font-mono);font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:var(--op-fg-3);}
+  .r0{border-radius:0;}
+  .r1{border-radius:2px;}
+  .r2{border-radius:4px;}
+  .r3{border-radius:6px;}
+  .rp{border-radius:999px;}
+
+  /* spacing row */
+  .ruler{height:64px;background:var(--op-elev-1);border:1px solid var(--op-line);position:relative;display:flex;align-items:flex-end;padding:6px 8px 6px 6px;gap:0;}
+  .tick{flex:0 0 auto;border-left:1px solid var(--op-line-2);height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:4px;}
+  .tick span{font-family:var(--op-font-mono);font-size:8px;color:var(--op-fg-3);letter-spacing:0.06em;writing-mode:vertical-rl;transform:rotate(180deg);margin-bottom:4px;}
+  .bar{background:var(--op-cyan);align-self:flex-end;width:100%;box-shadow:0 0 8px -2px var(--op-cyan-glow);}
+
+  /* in-use example */
+  .demo{margin-top:10px;padding:10px 12px;border:1px solid var(--op-line);background:var(--op-elev-1);display:flex;align-items:center;gap:8px;}
+  .chip{font-family:var(--op-font-mono);font-size:10px;padding:3px 8px;border:1px solid var(--op-line-2);border-radius:2px;color:var(--op-fg-2);}
+  .chip.cy{border-color:rgba(0,229,255,0.4);color:var(--op-cyan);}
+  .pill{font-family:var(--op-font-mono);font-size:10px;padding:3px 10px;border:1px solid rgba(184,255,60,0.4);border-radius:999px;color:var(--op-lime);}
+</style></head>
+<body class="op-body">
+<div class="wrap">
+
+  <!-- LEFT: radii -->
+  <div class="col">
+    <span class="lbl">radii · sharp default</span>
+    <div class="radii">
+      <div class="r r0"><span class="n">r-0</span><span class="v">0px</span></div>
+      <div class="r r1"><span class="n">r-1</span><span class="v">2px</span></div>
+      <div class="r r2"><span class="n">r-2</span><span class="v">4px</span></div>
+      <div class="r r3"><span class="n">r-3</span><span class="v">6px</span></div>
+      <div class="r rp"><span class="n">pill</span><span class="v">999</span></div>
+    </div>
+    <div class="demo">
+      <span class="lbl" style="margin-right:auto;">in-use</span>
+      <span class="chip">[ run_42 ]</span>
+      <span class="chip cy">deploy →</span>
+      <span class="pill">● running</span>
+    </div>
+  </div>
+
+  <!-- RIGHT: spacing -->
+  <div class="col">
+    <span class="lbl">spacing · 4px base</span>
+    <div class="ruler">
+      <div class="tick" style="width:2px;"><span>2</span><div class="bar" style="height:2px;"></div></div>
+      <div class="tick" style="width:4px;"><span>4</span><div class="bar" style="height:4px;"></div></div>
+      <div class="tick" style="width:8px;"><span>8</span><div class="bar" style="height:8px;"></div></div>
+      <div class="tick" style="width:12px;"><span>12</span><div class="bar" style="height:12px;"></div></div>
+      <div class="tick" style="width:16px;"><span>16</span><div class="bar" style="height:16px;"></div></div>
+      <div class="tick" style="width:20px;"><span>20</span><div class="bar" style="height:20px;"></div></div>
+      <div class="tick" style="width:24px;"><span>24</span><div class="bar" style="height:24px;"></div></div>
+      <div class="tick" style="width:32px;"><span>32</span><div class="bar" style="height:32px;"></div></div>
+      <div class="tick" style="width:40px;"><span>40</span><div class="bar" style="height:40px;"></div></div>
+      <div class="tick" style="width:56px;"><span>56</span><div class="bar" style="height:52px;"></div></div>
+    </div>
+    <div class="demo" style="gap:0;justify-content:space-between;">
+      <div style="display:flex;gap:8px;">
+        <span class="chip">gap-3</span>
+        <span class="chip">gap-3</span>
+        <span class="chip">gap-3</span>
+      </div>
+      <span class="lbl">card pad 16 · row gap 8</span>
+    </div>
+  </div>
+
+</div>
+</body></html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--op-base);color:var(--op-fg-1);font-family:var(--op-font-mono);}
+  .wrap{padding:18px 22px;display:flex;flex-direction:column;gap:14px;}
+  .row{display:flex;gap:10px;align-items:center;}
+  /* Button base */
+  .btn{font-family:var(--op-font-mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;padding:8px 14px;border-radius:2px;cursor:pointer;border:1px solid var(--op-line-2);background:transparent;color:var(--op-fg-1);transition:all 160ms cubic-bezier(.2,.7,.1,1);}
+  .btn:hover{background:var(--op-elev-3);border-color:var(--op-line-3);}
+  .btn.primary{border-color:var(--op-cyan);color:var(--op-cyan);box-shadow:0 0 18px -6px var(--op-cyan-glow);}
+  .btn.primary:hover{box-shadow:0 0 22px -2px var(--op-cyan-glow);background:rgba(0,229,255,0.05);}
+  .btn.danger{border-color:var(--op-magenta);color:var(--op-magenta);}
+  .btn.danger:hover{box-shadow:0 0 22px -2px var(--op-magenta-glow);background:rgba(255,46,142,0.05);}
+  .btn.solid{background:var(--op-cyan);color:#05060A;border-color:var(--op-cyan);font-weight:700;}
+  .btn.ghost{border-color:transparent;color:var(--op-fg-2);}
+  .btn.ghost:hover{color:var(--op-fg-1);border-color:var(--op-line);}
+  .btn.sm{padding:5px 10px;font-size:10px;}
+  .btn.disabled{color:var(--op-fg-4);border-color:var(--op-line);pointer-events:none;}
+  .lbl{font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--op-fg-3);width:80px;}
+</style></head>
+<body class="op-body">
+<div class="wrap">
+  <div class="row"><span class="lbl">primary</span>
+    <button class="btn primary">Deploy →</button>
+    <button class="btn">Cancel</button>
+    <button class="btn solid">Confirm</button>
+    <button class="btn ghost">Reset</button>
+    <button class="btn disabled">Disabled</button>
+  </div>
+  <div class="row"><span class="lbl">danger</span>
+    <button class="btn danger">Kill agent</button>
+    <button class="btn danger sm">Halt</button>
+    <button class="btn primary sm">Ack</button>
+    <button class="btn sm">View →</button>
+  </div>
+</div>
+</body></html>

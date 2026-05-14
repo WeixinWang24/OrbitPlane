@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "orbitplane.codex.event.v1",
+  "eventId": "evt_python_variables_case_linked_001",
+  "sequence": 1,
+  "emittedAt": "2026-05-14T18:20:00Z",
+  "producer": {
+    "kind": "MCP",
+    "name": "orbitplane-teaching",
+    "version": "0.1.0"
+  },
+  "session": {
+    "sessionId": "fixture_python_variables_beginner",
+    "workspaceId": "OrbitPlane",
+    "repoRoot": "/Volumes/2TB/Dev/OrbitPlane",
+    "branch": "main",
+    "commit": null
+  },
+  "eventType": "ARTIFACT_LINKED",
+  "payload": {
+    "artifactType": "TEACHING_CASE_HTML",
+    "caseId": "python-variables-beginner-001",
+    "path": "/Volumes/2TB/Dev/OrbitPlane/CodexIntegration/fixtures/teaching_cases/python_variables_beginner.html",
+    "title": "第一次理解 Python 变量",
+    "conceptIds": [
+      "python.variables.assignment"
+    ],
+    "learnerLevel": "absolute_beginner"
+  },
+  "links": [
+    {
+      "kind": "file",
+      "target": "/Volumes/2TB/Dev/OrbitPlane/CodexIntegration/fixtures/teaching_cases/python_variables_beginner.html",
+      "label": "第一次理解 Python 变量"
+    }
+  ],
+  "privacy": {
+    "hasSecrets": false,
+    "redactionApplied": false,
+    "redactionNotes": []
+  }
+}

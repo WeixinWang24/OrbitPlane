@@ -1,0 +1,83 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--op-base);color:var(--op-fg-1);font-family:var(--op-font-mono);}
+  .wrap{padding:16px 22px;display:flex;flex-direction:column;gap:10px;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border:1px solid var(--op-line-2);border-radius:999px;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--op-fg-2);}
+  .dot{width:6px;height:6px;border-radius:50%;}
+
+  /* Violet leads */
+  .pill.replay{border-color:rgba(139,92,246,0.5);color:#A98DF9;background:rgba(139,92,246,0.06);box-shadow:0 0 14px -6px rgba(139,92,246,0.6);}
+  .pill.replay .dot{background:#8B5CF6;box-shadow:0 0 8px rgba(139,92,246,0.7);animation:p 1.4s ease-in-out infinite;}
+
+  .pill.run{border-color:rgba(184,255,60,0.35);color:var(--op-lime);}
+  .pill.run .dot{background:var(--op-lime);box-shadow:0 0 8px var(--op-lime-glow);animation:p 1.4s ease-in-out infinite;}
+  .pill.err{border-color:rgba(255,46,142,0.35);color:var(--op-magenta);}
+  .pill.err .dot{background:var(--op-magenta);box-shadow:0 0 8px var(--op-magenta-glow);}
+  .pill.que{border-color:rgba(255,182,39,0.35);color:var(--op-amber);}
+  .pill.que .dot{background:var(--op-amber);}
+  .pill.done{border-color:rgba(0,229,255,0.35);color:var(--op-cyan);}
+  .pill.done .dot{background:var(--op-cyan);}
+  .pill.idle .dot{background:var(--op-fg-3);}
+  @keyframes p{50%{opacity:0.4;}}
+
+  .lbl{font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--op-fg-3);width:84px;flex-shrink:0;}
+
+  /* Progress bar — violet primary */
+  .bar{flex:1;display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid rgba(139,92,246,0.35);background:rgba(139,92,246,0.04);}
+  .bar .num{font-size:10px;color:var(--op-fg-2);letter-spacing:0.08em;}
+  .bar .num em{color:#A98DF9;font-style:normal;font-weight:700;}
+  .seg{height:6px;flex:1;background:var(--op-elev-3);position:relative;overflow:hidden;}
+  .seg::after{content:"";position:absolute;inset:0;width:62%;background:linear-gradient(90deg,#8B5CF6,#A98DF9);box-shadow:0 0 10px rgba(139,92,246,0.7);}
+  .seg .tick{position:absolute;top:-3px;width:1px;height:12px;background:var(--op-line-2);}
+
+  /* Stepped indicator */
+  .steps{display:flex;gap:3px;align-items:center;}
+  .steps .s{width:14px;height:6px;background:var(--op-elev-3);}
+  .steps .s.on{background:#8B5CF6;box-shadow:0 0 6px rgba(139,92,246,0.6);}
+  .steps .s.cur{background:#A98DF9;box-shadow:0 0 8px rgba(139,92,246,0.9);}
+</style></head>
+<body class="op-body">
+<div class="wrap">
+
+  <div class="row">
+    <span class="lbl">primary</span>
+    <span class="pill replay"><span class="dot"></span>replaying · agt_p4mb</span>
+    <span class="pill run"><span class="dot"></span>running</span>
+    <span class="pill que"><span class="dot"></span>queued</span>
+    <span class="pill done"><span class="dot"></span>done</span>
+    <span class="pill err"><span class="dot"></span>errored</span>
+    <span class="pill idle"><span class="dot"></span>idle</span>
+  </div>
+
+  <div class="row">
+    <span class="lbl">progress</span>
+    <div class="bar">
+      <span class="num">replay</span>
+      <div class="seg">
+        <span class="tick" style="left:25%;"></span>
+        <span class="tick" style="left:50%;"></span>
+        <span class="tick" style="left:75%;"></span>
+      </div>
+      <span class="num">step <em>12/19</em></span>
+    </div>
+  </div>
+
+  <div class="row">
+    <span class="lbl">stepper</span>
+    <div class="steps">
+      <span class="s on"></span><span class="s on"></span><span class="s on"></span>
+      <span class="s on"></span><span class="s on"></span><span class="s on"></span>
+      <span class="s on"></span><span class="s on"></span><span class="s on"></span>
+      <span class="s on"></span><span class="s on"></span><span class="s cur"></span>
+      <span class="s"></span><span class="s"></span><span class="s"></span>
+      <span class="s"></span><span class="s"></span><span class="s"></span><span class="s"></span>
+    </div>
+    <span style="font-size:10px;color:#A98DF9;letter-spacing:0.08em;margin-left:8px;">↻ replay</span>
+  </div>
+
+</div>
+</body></html>

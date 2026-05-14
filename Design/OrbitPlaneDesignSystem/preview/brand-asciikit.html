@@ -1,0 +1,68 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--op-base);color:var(--op-fg-1);font-family:var(--op-font-mono);}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0 3px,rgba(255,255,255,0.012) 3px 4px);}
+  .wrap{padding:14px 22px;display:flex;flex-direction:column;gap:6px;position:relative;}
+  .row{display:grid;grid-template-columns:48px 110px 1fr 60px;gap:14px;align-items:center;font-size:13px;padding:4px 0;border-bottom:1px dashed var(--op-line);}
+  .row:last-child{border-bottom:none;}
+  .g{font-size:24px;text-align:center;line-height:1;font-weight:700;}
+  .g.lime{color:var(--op-lime);text-shadow:0 0 8px rgba(184,255,60,0.55),0 0 14px rgba(184,255,60,0.3);}
+  .g.amber{color:var(--op-amber);text-shadow:0 0 8px rgba(255,182,39,0.5),0 0 14px rgba(255,182,39,0.25);}
+  .g.magenta{color:var(--op-magenta);text-shadow:0 0 8px rgba(255,46,142,0.55),0 0 14px rgba(255,46,142,0.3);}
+  .g.cyan{color:var(--op-cyan);text-shadow:0 0 8px rgba(0,229,255,0.55),0 0 14px rgba(0,229,255,0.3);}
+  .g.violet{color:#A98DF9;text-shadow:0 0 8px rgba(139,92,246,0.55),0 0 14px rgba(139,92,246,0.3);}
+  .g.mute{color:var(--op-fg-3);}
+  .caret{animation:b 1s steps(2) infinite;}
+  @keyframes b{50%{opacity:0.15;}}
+  .name{font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--op-fg-3);}
+  .desc{color:var(--op-fg-2);font-size:12px;}
+  .uni{font-size:9px;color:var(--op-fg-4);letter-spacing:0.06em;text-align:right;}
+</style></head>
+<body class="op-body">
+<div class="wrap">
+  <div class="row">
+    <span class="g lime">●</span>
+    <span class="name">active</span>
+    <span class="desc">running agent / live status dot</span>
+    <span class="uni">U+25CF</span>
+  </div>
+  <div class="row">
+    <span class="g amber">◌</span>
+    <span class="name">idle</span>
+    <span class="desc">queued, waiting on uplink</span>
+    <span class="uni">U+25CC</span>
+  </div>
+  <div class="row">
+    <span class="g magenta">▲</span>
+    <span class="name">alert</span>
+    <span class="desc">error or interrupt requested</span>
+    <span class="uni">U+25B2</span>
+  </div>
+  <div class="row">
+    <span class="g cyan caret">▌</span>
+    <span class="name">live</span>
+    <span class="desc">blinking cursor — input is live</span>
+    <span class="uni">U+258C</span>
+  </div>
+  <div class="row">
+    <span class="g cyan">→</span>
+    <span class="name">affordance</span>
+    <span class="desc">link / next step arrow</span>
+    <span class="uni">U+2192</span>
+  </div>
+  <div class="row">
+    <span class="g violet">↻</span>
+    <span class="name">replay</span>
+    <span class="desc">replay run · re-render trace</span>
+    <span class="uni">U+21BB</span>
+  </div>
+  <div class="row">
+    <span class="g mute" style="letter-spacing:0.06em;">//</span>
+    <span class="name">separator</span>
+    <span class="desc">header divider · meta string</span>
+    <span class="uni">U+002F</span>
+  </div>
+</div>
+</body></html>

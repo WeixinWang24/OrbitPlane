@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 80" fill="none">
+  <defs>
+    
+    <filter id="lg-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.4" result="b"></feGaussianBlur>
+      <feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+    </filter>
+  </defs>
+
+  
+  <g transform="translate(10 8)" filter="url(#lg-glow)">
+    
+    <path d="M32 1 L60 17 L60 47 L32 63 L4 47 L4 17 Z" stroke="#8B5CF6" stroke-width="1.25" fill="none" opacity="0.45"></path>
+    
+    <path d="M32 7 L55 20 L55 44 L32 57 L9 44 L9 20 Z" stroke="#A98DF9" stroke-width="1" fill="rgba(139,92,246,0.06)" opacity="0.85"></path>
+
+    
+    <g stroke="#A98DF9" stroke-width="1.25">
+      <path d="M2 17 L4 17 M4 15 L4 17"></path>
+      <path d="M62 17 L60 17 M60 15 L60 17"></path>
+      <path d="M2 47 L4 47 M4 49 L4 47"></path>
+      <path d="M62 47 L60 47 M60 49 L60 47"></path>
+    </g>
+
+    
+    <ellipse cx="32" cy="32" rx="22" ry="9" stroke="#A98DF9" stroke-width="1" fill="none" transform="rotate(-18 32 32)" opacity="0.7"></ellipse>
+    <ellipse cx="32" cy="32" rx="18" ry="22" stroke="#8B5CF6" stroke-width="0.9" fill="none" stroke-dasharray="2 3" opacity="0.45"></ellipse>
+
+    
+    <g stroke="#A98DF9" stroke-width="0.6" opacity="0.55">
+      <line x1="32" y1="14" x2="32" y2="20"></line>
+      <line x1="32" y1="44" x2="32" y2="50"></line>
+      <line x1="14" y1="32" x2="20" y2="32"></line>
+      <line x1="44" y1="32" x2="50" y2="32"></line>
+    </g>
+
+    
+    <g transform="translate(32 32)">
+      <path d="M-7 4 L0 -7 L7 4 L0 1 Z" fill="#A98DF9"></path>
+      <path d="M-7 4 L0 -7 L7 4 L0 1 Z" stroke="#D6C6FE" stroke-width="0.5" fill="none"></path>
+    </g>
+
+    
+    <g transform="translate(52 22)">
+      <circle r="2" fill="#B8FF3C"></circle>
+      <circle r="3.5" stroke="#B8FF3C" stroke-width="0.6" fill="none" opacity="0.6"></circle>
+    </g>
+    <circle cx="14" cy="44" r="1.3" fill="#FF2E8E"></circle>
+
+    
+    <g stroke="#8B5CF6" stroke-width="0.8" opacity="0.6" transform="translate(0 67)">
+      <line x1="6" y1="0" x2="6" y2="3"></line>
+      <line x1="12" y1="0" x2="12" y2="3"></line>
+      <line x1="18" y1="0" x2="18" y2="3"></line>
+      <line x1="32" y1="0" x2="32" y2="5" stroke="#B8FF3C"></line>
+      <line x1="46" y1="0" x2="46" y2="3"></line>
+      <line x1="52" y1="0" x2="52" y2="3"></line>
+      <line x1="58" y1="0" x2="58" y2="3"></line>
+    </g>
+  </g>
+
+  
+  <g transform="translate(84 0)">
+    
+    <text x="0" y="20" class="mono" font-size="9" font-weight="500" letter-spacing="0.32em" fill="#5A6580">
+      ┌─ AGT.FLEET / SECTOR 7G ─┐
+    </text>
+
+    
+    <g transform="translate(0 32)">
+      <text x="0" y="22" class="scifi" font-size="22" fill="#E4ECF7">ORBIT</text>
+      
+      <g transform="translate(80 22)" filter="url(#lg-glow)">
+        <path d="M0 -6 L5 0 L0 6 L-5 0 Z" fill="#A98DF9"></path>
+      </g>
+      <text x="90" y="22" class="scifi" font-size="22" fill="#E4ECF7">PLANE</text>
+
+      
+      <line x1="0" y1="13" x2="208" y2="13" stroke="#0A0D14" stroke-width="2"></line>
+    </g>
+
+    
+    <text x="0" y="74" class="mono" font-size="9" font-weight="500" letter-spacing="0.34em" fill="#5A6580">
+      v3.2.1 · MISSION CONTROL // AI
+    </text>
+
+    
+    <circle cx="234" cy="42" r="2.5" fill="#B8FF3C">
+      
+    </circle>
+    <text x="242" y="46" class="mono" font-size="9" font-weight="700" letter-spacing="0.18em" fill="#B8FF3C">LIVE</text>
+  </g>
+</svg>

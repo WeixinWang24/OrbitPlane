@@ -1,0 +1,22 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--op-base);color:var(--op-fg-1);font-family:var(--op-font-mono);}
+  .wrap{padding:18px 22px;display:flex;flex-direction:column;gap:8px;}
+  .row{display:flex;align-items:center;gap:12px;font-size:12px;letter-spacing:0.04em;color:var(--op-fg-2);}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+  .name{color:var(--op-fg-3);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;width:120px;}
+  .val{color:var(--op-fg-1);font-weight:500;}
+  .hex{color:var(--op-fg-3);margin-left:auto;}
+</style></head>
+<body class="op-body">
+<div class="wrap">
+  <div class="row"><span class="name">running</span><span class="dot" style="background:#B8FF3C;box-shadow:0 0 8px rgba(184,255,60,0.7);"></span><span class="val">● agt_8x4z running</span><span class="hex">--op-state-running</span></div>
+  <div class="row"><span class="name">queued</span><span class="dot" style="background:#FFB627;"></span><span class="val">◌ agt_7r2k queued</span><span class="hex">--op-state-queued</span></div>
+  <div class="row"><span class="name">paused</span><span class="dot" style="background:#FFB627;opacity:.5;"></span><span class="val">‖ agt_2n9q paused</span><span class="hex">--op-state-paused</span></div>
+  <div class="row"><span class="name">errored</span><span class="dot" style="background:#FF2E8E;box-shadow:0 0 8px rgba(255,46,142,0.7);"></span><span class="val">▲ agt_p4mb errored</span><span class="hex">--op-state-error</span></div>
+  <div class="row"><span class="name">done</span><span class="dot" style="background:#00E5FF;"></span><span class="val">◉ agt_kk31 done</span><span class="hex">--op-state-done</span></div>
+  <div class="row"><span class="name">idle</span><span class="dot" style="background:#5A6580;"></span><span class="val">○ agt_dl08 idle</span><span class="hex">--op-state-idle</span></div>
+</div>
+</body></html>

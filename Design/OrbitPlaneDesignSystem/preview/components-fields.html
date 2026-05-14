@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--op-base);color:var(--op-fg-1);font-family:var(--op-font-mono);}
+  .wrap{padding:18px 22px;display:flex;flex-direction:column;gap:10px;}
+  .row{display:flex;gap:10px;align-items:center;}
+  .field{flex:1;display:flex;align-items:center;gap:6px;padding:0 12px;height:36px;background:var(--op-elev-1);border:1px solid var(--op-line);font-size:13px;color:var(--op-fg-1);}
+  .field.focus{border-color:var(--op-cyan);box-shadow:0 0 0 1px rgba(0,229,255,0.2),0 0 18px -6px var(--op-cyan-glow);}
+  .field .ph{color:var(--op-fg-3);}
+  .prefix{color:var(--op-cyan);}
+  .caret{color:var(--op-cyan);animation:b 1s steps(2) infinite;}
+  @keyframes b{50%{opacity:0;}}
+  .lbl{font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--op-fg-3);width:80px;}
+  .seg{display:inline-flex;border:1px solid var(--op-line-2);}
+  .seg span{padding:6px 12px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--op-fg-2);cursor:pointer;border-right:1px solid var(--op-line-2);}
+  .seg span:last-child{border-right:none;}
+  .seg span.on{background:var(--op-elev-3);color:var(--op-cyan);}
+  .check{width:14px;height:14px;border:1px solid var(--op-line-2);display:inline-flex;align-items:center;justify-content:center;}
+  .check.on{border-color:var(--op-cyan);background:rgba(0,229,255,0.1);color:var(--op-cyan);font-size:10px;}
+</style></head>
+<body class="op-body">
+<div class="wrap">
+  <div class="row"><span class="lbl">input</span>
+    <div class="field focus"><span class="prefix">$</span><span>orbit deploy --agent agt_8x4z</span><span class="caret">▌</span></div>
+  </div>
+  <div class="row"><span class="lbl">empty</span>
+    <div class="field"><span class="ph">search agents · cmd-k</span></div>
+    <div class="seg"><span class="on">all</span><span>running</span><span>errored</span></div>
+  </div>
+  <div class="row"><span class="lbl">toggles</span>
+    <span style="display:inline-flex;gap:6px;align-items:center;font-size:12px;color:var(--op-fg-2);"><span class="check on">✓</span>auto-replay</span>
+    <span style="display:inline-flex;gap:6px;align-items:center;font-size:12px;color:var(--op-fg-2);"><span class="check"></span>page on error</span>
+    <span style="display:inline-flex;gap:6px;align-items:center;font-size:12px;color:var(--op-fg-2);"><span class="check on">✓</span>verbose</span>
+  </div>
+</div>
+</body></html>

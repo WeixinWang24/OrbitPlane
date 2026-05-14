@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360" fill="none">
+  <defs>
+    
+    <radialGradient id="rd-space" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#0B1726"></stop>
+      <stop offset="55%" stop-color="#040810"></stop>
+      <stop offset="100%" stop-color="#02030A"></stop>
+    </radialGradient>
+
+    
+    <radialGradient id="rd-nebula" cx="20%" cy="20%" r="40%">
+      <stop offset="0%" stop-color="#7AF6FF" stop-opacity="0.16"></stop>
+      <stop offset="40%" stop-color="#3478C8" stop-opacity="0.07"></stop>
+      <stop offset="100%" stop-color="#02030A" stop-opacity="0"></stop>
+    </radialGradient>
+
+    
+    <radialGradient id="rd-pulse" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.18"></stop>
+      <stop offset="55%" stop-color="#00E5FF" stop-opacity="0.04"></stop>
+      <stop offset="100%" stop-color="#00E5FF" stop-opacity="0"></stop>
+    </radialGradient>
+
+    
+    <linearGradient id="rd-sweep" gradientUnits="userSpaceOnUse" x1="180" y1="180" x2="320" y2="180">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0"></stop>
+      <stop offset="80%" stop-color="#7AF6FF" stop-opacity="0.18"></stop>
+      <stop offset="100%" stop-color="#7AF6FF" stop-opacity="0.55"></stop>
+    </linearGradient>
+
+    <filter id="rd-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.2" result="b"></feGaussianBlur>
+      <feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+    </filter>
+    <filter id="rd-bigglow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3.5"></feGaussianBlur>
+    </filter>
+  </defs>
+
+  
+  <rect width="360" height="360" fill="url(#rd-space)"></rect>
+  <rect width="360" height="360" fill="url(#rd-nebula)"></rect>
+
+  
+  <g fill="#E4ECF7">
+    <circle cx="32" cy="42" r="0.6" opacity="0.6"></circle>
+    <circle cx="86" cy="22" r="0.8"></circle>
+    <circle cx="138" cy="50" r="0.5" opacity="0.5"></circle>
+    <circle cx="252" cy="34" r="0.7" opacity="0.7"></circle>
+    <circle cx="306" cy="58" r="0.5" opacity="0.5"></circle>
+    <circle cx="332" cy="98" r="0.8"></circle>
+    <circle cx="22" cy="148" r="0.6" opacity="0.7"></circle>
+    <circle cx="40" cy="240" r="0.7"></circle>
+    <circle cx="328" cy="220" r="0.6" opacity="0.7"></circle>
+    <circle cx="280" cy="312" r="0.8"></circle>
+    <circle cx="60" cy="318" r="0.5" opacity="0.5"></circle>
+    <circle cx="180" cy="32" r="0.8"></circle>
+    <circle cx="318" cy="160" r="0.5" opacity="0.5"></circle>
+  </g>
+  <g stroke="#7AF6FF" stroke-width="0.5" stroke-opacity="0.7">
+    <line x1="86" y1="18" x2="86" y2="26"></line><line x1="82" y1="22" x2="90" y2="22"></line>
+    <line x1="252" y1="30" x2="252" y2="38"></line><line x1="248" y1="34" x2="256" y2="34"></line>
+  </g>
+
+  
+  <g>
+    <rect x="14" y="14" width="332" height="332" rx="2" fill="rgba(8,18,30,0.55)" stroke="#0E2A3A" stroke-width="0.8"></rect>
+    
+    <g stroke="#7AF6FF" stroke-width="1" stroke-opacity="0.55" fill="none">
+      <path d="M22 30 L22 22 L30 22"></path>
+      <path d="M330 22 L338 22 L338 30"></path>
+      <path d="M22 330 L22 338 L30 338"></path>
+      <path d="M338 330 L338 338 L330 338"></path>
+    </g>
+  </g>
+
+  
+  <g font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="0.22em">
+    <text x="32" y="34" fill="#7AF6FF" opacity="0.85">⏵ NAV.SCOPE</text>
+    <text x="338" y="34" text-anchor="end" fill="#5A6580">RNG 9.2km</text>
+    <text x="32" y="344" fill="#5A6580">TGTS · 05</text>
+    <text x="338" y="344" text-anchor="end" fill="#7AF6FF" opacity="0.85">▌LOCK · AUTO</text>
+  </g>
+
+  
+  <g transform="translate(180 184)">
+    
+    <circle r="130" fill="url(#rd-pulse)" filter="url(#rd-bigglow)"></circle>
+
+    
+    <g fill="none" filter="url(#rd-glow)">
+      <ellipse rx="30" ry="13" stroke="#7AF6FF" stroke-width="0.6" stroke-opacity="0.7"></ellipse>
+      <ellipse rx="62" ry="26" stroke="#7AF6FF" stroke-width="0.5" stroke-opacity="0.45"></ellipse>
+      <ellipse rx="94" ry="40" stroke="#7AF6FF" stroke-width="0.5" stroke-opacity="0.32"></ellipse>
+      <ellipse rx="126" ry="54" stroke="#7AF6FF" stroke-width="0.45" stroke-opacity="0.22"></ellipse>
+    </g>
+
+    
+    <g fill="none" opacity="0.4">
+      <circle r="30" stroke="#2A3140" stroke-width="0.5"></circle>
+      <circle r="62" stroke="#2A3140" stroke-width="0.4"></circle>
+      <circle r="94" stroke="#1E2330" stroke-width="0.4"></circle>
+      <circle r="126" stroke="#1E2330" stroke-width="0.4"></circle>
+    </g>
+
+    
+    <ellipse rx="60" ry="100" stroke="#7AF6FF" stroke-width="0.5" stroke-opacity="0.3" stroke-dasharray="1.5 3.5" fill="none"></ellipse>
+
+    
+    <g stroke="#0E2A3A" stroke-width="0.5">
+      <line x1="-126" y1="0" x2="126" y2="0"></line>
+      <line x1="0" y1="-100" x2="0" y2="100"></line>
+    </g>
+
+    
+    <g opacity="0.35">
+      <path d="M0 0 L126 0 A126 54 0 0 1 100 42 Z" fill="#00E5FF" fill-opacity="0.08"></path>
+      <path d="M0 0 L126 0 A126 54 0 0 1 116 22 Z" fill="#00E5FF" fill-opacity="0.18"></path>
+    </g>
+    <path d="M0 0 L126 0 A126 54 0 0 1 75 50 Z" fill="url(#rd-sweep)" filter="url(#rd-glow)"></path>
+    <line x1="0" y1="0" x2="126" y2="0" stroke="#7AF6FF" stroke-width="1" stroke-opacity="0.85" filter="url(#rd-glow)"></line>
+
+    
+    <g filter="url(#rd-glow)">
+      <path d="M-6 -2 L0 -10 L6 -2 L4 2 L4 6 L-4 6 L-4 2 Z" fill="#0A0D14" stroke="#7AF6FF" stroke-width="0.7"></path>
+      <path d="M-2 6 L0 10 L2 6 Z" fill="#7AF6FF" opacity="0.85"></path>
+    </g>
+
+    
+    <g filter="url(#rd-glow)">
+      
+      <g transform="translate(54 -18)">
+        <rect x="-3.5" y="-3.5" width="7" height="7" stroke="#7AF6FF" stroke-width="0.8" fill="none"></rect>
+        <circle r="1" fill="#7AF6FF"></circle>
+      </g>
+      <g transform="translate(-46 -32)">
+        <rect x="-3" y="-3" width="6" height="6" stroke="#7AF6FF" stroke-width="0.6" fill="none" opacity="0.7"></rect>
+        <circle r="0.8" fill="#7AF6FF" opacity="0.8"></circle>
+      </g>
+      <g transform="translate(-78 22)">
+        <rect x="-3" y="-3" width="6" height="6" stroke="#7AF6FF" stroke-width="0.6" fill="none" opacity="0.6"></rect>
+        <circle r="0.7" fill="#7AF6FF" opacity="0.7"></circle>
+      </g>
+      
+      <g transform="translate(96 22)">
+        <rect x="-4" y="-4" width="8" height="8" stroke="#FF4D6D" stroke-width="0.9" fill="none" stroke-dasharray="2 1.5"></rect>
+        <circle r="1.2" fill="#FF4D6D"></circle>
+        <line x1="-9" y1="0" x2="-4" y2="0" stroke="#FF4D6D" stroke-width="0.6" opacity="0.6"></line>
+      </g>
+      
+      <g transform="translate(30 44)">
+        <rect x="-2.5" y="-2.5" width="5" height="5" stroke="#FFB627" stroke-width="0.6" fill="none" opacity="0.7"></rect>
+      </g>
+    </g>
+
+    
+    <g font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.14em">
+      <line x1="62" y1="-18" x2="104" y2="-30" stroke="#7AF6FF" stroke-opacity="0.35" stroke-width="0.4"></line>
+      <text x="108" y="-30" fill="#7AF6FF" opacity="0.85">agt_8x4z</text>
+      <text x="108" y="-22" fill="#5A6580">1.2km · ALLY</text>
+
+      <line x1="100" y1="22" x2="124" y2="48" stroke="#FF4D6D" stroke-opacity="0.4" stroke-width="0.4"></line>
+      <text x="128" y="48" fill="#FF4D6D" opacity="0.95">▲ HOSTILE</text>
+      <text x="128" y="56" fill="#5A6580">RDR-01 · 9.2km</text>
+    </g>
+
+    
+    <g font-family="JetBrains Mono, monospace" font-size="6" letter-spacing="0.18em" fill="#3A4358">
+      <text x="0" y="-108" text-anchor="middle">000</text>
+      <text x="130" y="3" text-anchor="middle">090</text>
+      <text x="0" y="115" text-anchor="middle">180</text>
+      <text x="-130" y="3" text-anchor="middle">270</text>
+    </g>
+  </g>
+
+  
+  <g transform="translate(28 264)">
+    <rect width="92" height="68" fill="rgba(8,18,30,0.75)" stroke="#0E2A3A" stroke-width="0.6"></rect>
+    <text x="6" y="12" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.18em" fill="#7AF6FF" opacity="0.85">SYSTEM</text>
+    <line x1="0" y1="16" x2="92" y2="16" stroke="#0E2A3A"></line>
+    <g font-family="JetBrains Mono, monospace" font-size="6" letter-spacing="0.06em">
+      <text x="6" y="28" fill="#5A6580">SCAN</text>
+      <text x="86" y="28" text-anchor="end" fill="#7AF6FF">100%</text>
+      <rect x="6" y="32" width="80" height="2" fill="#0E2A3A"></rect>
+      <rect x="6" y="32" width="80" height="2" fill="#7AF6FF" opacity="0.85"></rect>
+      <text x="6" y="46" fill="#5A6580">GAIN</text>
+      <text x="86" y="46" text-anchor="end" fill="#7AF6FF">74%</text>
+      <rect x="6" y="50" width="80" height="2" fill="#0E2A3A"></rect>
+      <rect x="6" y="50" width="59" height="2" fill="#7AF6FF" opacity="0.85"></rect>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,235 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" fill="none">
+  <defs>
+    
+    <linearGradient id="tr-bg" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="360">
+      <stop offset="0%" stop-color="#08111E"></stop>
+      <stop offset="100%" stop-color="#04070E"></stop>
+    </linearGradient>
+
+    
+    <linearGradient id="tr-ridge-1" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7AF6FF" stop-opacity="0.55"></stop>
+      <stop offset="100%" stop-color="#7AF6FF" stop-opacity="0"></stop>
+    </linearGradient>
+    <linearGradient id="tr-ridge-2" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7AF6FF" stop-opacity="0.42"></stop>
+      <stop offset="100%" stop-color="#7AF6FF" stop-opacity="0"></stop>
+    </linearGradient>
+    <linearGradient id="tr-ridge-3" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7AF6FF" stop-opacity="0.32"></stop>
+      <stop offset="100%" stop-color="#7AF6FF" stop-opacity="0"></stop>
+    </linearGradient>
+    <linearGradient id="tr-ridge-4" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7AF6FF" stop-opacity="0.22"></stop>
+      <stop offset="100%" stop-color="#7AF6FF" stop-opacity="0"></stop>
+    </linearGradient>
+
+    <filter id="tr-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.2" result="b"></feGaussianBlur>
+      <feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+    </filter>
+    <filter id="tr-soft" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3.5"></feGaussianBlur>
+    </filter>
+
+    
+    <pattern id="tr-grid" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M30 0 L0 0 L0 30" stroke="#0E2A3A" stroke-width="0.4" fill="none"></path>
+    </pattern>
+  </defs>
+
+  
+  <rect width="600" height="360" fill="url(#tr-bg)"></rect>
+  <rect width="600" height="360" fill="url(#tr-grid)" opacity="0.6"></rect>
+
+  
+  <ellipse cx="300" cy="260" rx="320" ry="20" fill="#7AF6FF" opacity="0.06" filter="url(#tr-soft)"></ellipse>
+
+  
+  <rect x="12" y="12" width="576" height="336" rx="3" fill="none" stroke="#0E2A3A" stroke-width="0.8"></rect>
+  <g stroke="#7AF6FF" stroke-width="0.7" stroke-opacity="0.55" fill="none">
+    <path d="M20 30 L20 20 L30 20"></path>
+    <path d="M570 20 L580 20 L580 30"></path>
+    <path d="M20 330 L20 340 L30 340"></path>
+    <path d="M580 330 L580 340 L570 340"></path>
+  </g>
+
+  
+  <g font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="0.2em">
+    <text x="26" y="32" fill="#7AF6FF" opacity="0.95">⏵ TERRAIN.STAT</text>
+    <text x="142" y="32" fill="#5A6580">SAMPLE</text>
+    <text x="188" y="32" fill="#E4ECF7">1,402</text>
+    <text x="230" y="32" fill="#5A6580">WINDOW</text>
+    <text x="280" y="32" fill="#E4ECF7">24h</text>
+    <text x="316" y="32" fill="#5A6580">UNIT</text>
+    <text x="344" y="32" fill="#E4ECF7">runs/min</text>
+    <text x="408" y="32" fill="#5A6580">σ</text>
+    <text x="420" y="32" fill="#7AF6FF">0.42</text>
+    <text x="468" y="32" fill="#5A6580">SCAN</text>
+    <text x="498" y="32" fill="#7AF6FF">▌ LIVE</text>
+    <text x="580" y="32" text-anchor="end" fill="#5A6580">14:02:11Z</text>
+  </g>
+  <line x1="20" y1="40" x2="580" y2="40" stroke="#0E2A3A"></line>
+
+  
+  <g transform="translate(26 60)" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.18em" fill="#5A6580">
+    <text x="0" y="0">PEAK</text>
+    <text x="0" y="42">3.2K</text>
+    <text x="0" y="84">2.4K</text>
+    <text x="0" y="126">1.6K</text>
+    <text x="0" y="168">0.8K</text>
+    <text x="0" y="200">─0─</text>
+  </g>
+
+  
+  
+  <g transform="translate(60 50)">
+
+    
+    <g stroke="#0E2A3A" stroke-width="0.4">
+      <line x1="0" y1="0" x2="480" y2="0"></line>
+      <line x1="0" y1="42" x2="480" y2="42"></line>
+      <line x1="0" y1="84" x2="480" y2="84"></line>
+      <line x1="0" y1="126" x2="480" y2="126"></line>
+      <line x1="0" y1="168" x2="480" y2="168"></line>
+      <line x1="0" y1="210" x2="480" y2="210" stroke="#2A3140" stroke-width="0.7"></line>
+    </g>
+    
+    <g stroke="#0E2A3A" stroke-width="0.4">
+      <line x1="0" y1="0" x2="0" y2="210"></line>
+      <line x1="80" y1="0" x2="80" y2="210"></line>
+      <line x1="160" y1="0" x2="160" y2="210"></line>
+      <line x1="240" y1="0" x2="240" y2="210"></line>
+      <line x1="320" y1="0" x2="320" y2="210"></line>
+      <line x1="400" y1="0" x2="400" y2="210"></line>
+      <line x1="480" y1="0" x2="480" y2="210"></line>
+    </g>
+
+    
+
+    
+    <path d="&#xA;      M0 95 L20 92 L40 96 L60 88 L80 94 L100 82 L120 90 L140 78 L160 86&#xA;      L180 72 L200 80 L220 70 L240 78 L260 66 L280 74 L300 62 L320 70&#xA;      L340 60 L360 68 L380 58 L400 66 L420 56 L440 64 L460 60 L480 66&#xA;      L480 210 L0 210 Z" fill="url(#tr-ridge-4)" opacity="0.8"></path>
+    <path d="&#xA;      M0 95 L20 92 L40 96 L60 88 L80 94 L100 82 L120 90 L140 78 L160 86&#xA;      L180 72 L200 80 L220 70 L240 78 L260 66 L280 74 L300 62 L320 70&#xA;      L340 60 L360 68 L380 58 L400 66 L420 56 L440 64 L460 60 L480 66" stroke="#7AF6FF" stroke-width="0.6" stroke-opacity="0.4" fill="none"></path>
+
+    
+    <path d="&#xA;      M0 130 L20 122 L40 134 L60 112 L80 128 L100 100 L120 124 L140 96 L160 118&#xA;      L180 88 L200 110 L220 84 L240 102 L260 78 L280 96 L300 72 L320 90 L340 68&#xA;      L360 84 L380 64 L400 80 L420 60 L440 76 L460 70 L480 82&#xA;      L480 210 L0 210 Z" fill="url(#tr-ridge-3)" opacity="0.85"></path>
+    <path d="&#xA;      M0 130 L20 122 L40 134 L60 112 L80 128 L100 100 L120 124 L140 96 L160 118&#xA;      L180 88 L200 110 L220 84 L240 102 L260 78 L280 96 L300 72 L320 90 L340 68&#xA;      L360 84 L380 64 L400 80 L420 60 L440 76 L460 70 L480 82" stroke="#7AF6FF" stroke-width="0.7" stroke-opacity="0.55" fill="none"></path>
+
+    
+    <path d="&#xA;      M0 160 L16 148 L32 162 L48 138 L64 156 L80 124 L96 152 L112 116 L128 144&#xA;      L144 108 L160 138 L176 100 L192 128 L208 92 L224 124 L240 88 L256 116 L272 80&#xA;      L288 110 L304 72 L320 98 L336 64 L352 88 L368 56 L384 80 L400 50 L416 76&#xA;      L432 60 L448 78 L464 64 L480 78&#xA;      L480 210 L0 210 Z" fill="url(#tr-ridge-2)" opacity="0.9"></path>
+    <path d="&#xA;      M0 160 L16 148 L32 162 L48 138 L64 156 L80 124 L96 152 L112 116 L128 144&#xA;      L144 108 L160 138 L176 100 L192 128 L208 92 L224 124 L240 88 L256 116 L272 80&#xA;      L288 110 L304 72 L320 98 L336 64 L352 88 L368 56 L384 80 L400 50 L416 76&#xA;      L432 60 L448 78 L464 64 L480 78" stroke="#7AF6FF" stroke-width="0.8" stroke-opacity="0.75" fill="none" filter="url(#tr-glow)"></path>
+
+    
+    <path d="&#xA;      M0 190 L12 178 L24 196 L36 170 L48 188 L60 152 L72 184 L84 142 L96 176&#xA;      L108 132 L120 168 L132 120 L144 158 L156 106 L168 144 L180 96 L192 132&#xA;      L204 84 L216 124 L228 76 L240 116 L252 68 L264 108 L276 60 L288 102 L300 52&#xA;      L312 92 L324 44 L336 84 L348 38 L360 78 L372 32 L384 70 L396 28 L408 64&#xA;      L420 36 L432 70 L444 52 L456 76 L468 60 L480 72&#xA;      L480 210 L0 210 Z" fill="#0A0F18" opacity="0.95"></path>
+    
+    <path d="&#xA;      M0 190 L12 178 L24 196 L36 170 L48 188 L60 152 L72 184 L84 142 L96 176&#xA;      L108 132 L120 168 L132 120 L144 158 L156 106 L168 144 L180 96 L192 132&#xA;      L204 84 L216 124 L228 76 L240 116 L252 68 L264 108 L276 60 L288 102 L300 52&#xA;      L312 92 L324 44 L336 84 L348 38 L360 78 L372 32 L384 70 L396 28 L408 64&#xA;      L420 36 L432 70 L444 52 L456 76 L468 60 L480 72&#xA;      L480 210 L0 210 Z" fill="url(#tr-ridge-1)"></path>
+    
+    <path d="&#xA;      M0 190 L12 178 L24 196 L36 170 L48 188 L60 152 L72 184 L84 142 L96 176&#xA;      L108 132 L120 168 L132 120 L144 158 L156 106 L168 144 L180 96 L192 132&#xA;      L204 84 L216 124 L228 76 L240 116 L252 68 L264 108 L276 60 L288 102 L300 52&#xA;      L312 92 L324 44 L336 84 L348 38 L360 78 L372 32 L384 70 L396 28 L408 64&#xA;      L420 36 L432 70 L444 52 L456 76 L468 60 L480 72" stroke="#7AF6FF" stroke-width="1.1" stroke-opacity="0.95" fill="none" filter="url(#tr-glow)"></path>
+
+    
+
+    
+    <g transform="translate(396 28)">
+      <circle r="3" fill="#7AF6FF" filter="url(#tr-glow)"></circle>
+      <circle r="6" fill="none" stroke="#7AF6FF" stroke-width="0.6" stroke-opacity="0.55"></circle>
+      
+      <line x1="0" y1="-9" x2="0" y2="-26" stroke="#7AF6FF" stroke-width="0.5" stroke-opacity="0.55"></line>
+      <line x1="0" y1="-26" x2="-24" y2="-26" stroke="#7AF6FF" stroke-width="0.5" stroke-opacity="0.55"></line>
+      
+      <g transform="translate(-110 -38)">
+        <rect width="86" height="22" fill="rgba(8,18,30,0.85)" stroke="#7AF6FF" stroke-width="0.6"></rect>
+        <text x="6" y="9" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.16em" fill="#7AF6FF">PEAK · t=18:30</text>
+        <text x="6" y="18" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.04em" fill="#E4ECF7">3,142 runs/m</text>
+      </g>
+    </g>
+
+    
+    <g transform="translate(228 76)">
+      <rect x="-4" y="-4" width="8" height="8" stroke="#FF4D6D" stroke-width="0.9" fill="none" stroke-dasharray="2 1.5"></rect>
+      <circle r="1.2" fill="#FF4D6D"></circle>
+      <line x1="6" y1="0" x2="22" y2="0" stroke="#FF4D6D" stroke-width="0.5" stroke-opacity="0.6"></line>
+      <g transform="translate(24 -16)">
+        <rect width="88" height="22" fill="rgba(40,8,18,0.85)" stroke="#FF4D6D" stroke-width="0.6"></rect>
+        <text x="6" y="9" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.16em" fill="#FF4D6D">▲ ANOMALY</text>
+        <text x="6" y="18" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.04em" fill="#FF7F95">+2.4σ · agt_p4mb</text>
+      </g>
+    </g>
+
+    
+    <line x1="0" y1="118" x2="480" y2="118" stroke="#A98DF9" stroke-width="0.7" stroke-opacity="0.7" stroke-dasharray="3 4"></line>
+    <g transform="translate(0 116)" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.16em">
+      <rect x="0" y="-7" width="36" height="10" fill="rgba(8,18,30,0.85)" stroke="#A98DF9" stroke-width="0.4"></rect>
+      <text x="4" y="1" fill="#A98DF9">μ 1,402</text>
+    </g>
+
+    
+    <line x1="0" y1="210" x2="480" y2="210" stroke="#2A3140" stroke-width="0.7"></line>
+
+    
+    <g font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.16em" fill="#5A6580">
+      <text x="0" y="226">00:00</text>
+      <text x="80" y="226">04:00</text>
+      <text x="160" y="226">08:00</text>
+      <text x="240" y="226">12:00</text>
+      <text x="320" y="226">16:00</text>
+      <text x="400" y="226">20:00</text>
+      <text x="480" y="226" text-anchor="end">23:59</text>
+    </g>
+    <g font-family="JetBrains Mono, monospace" font-size="6" letter-spacing="0.18em" fill="#3A4358">
+      <text x="240" y="240" text-anchor="middle">TIME · UTC</text>
+    </g>
+  </g>
+
+  
+  <g transform="translate(560 60)">
+    
+  </g>
+
+  
+
+  
+  <g transform="translate(26 290)">
+    <line x1="0" y1="0" x2="548" y2="0" stroke="#0E2A3A"></line>
+
+    
+    <g transform="translate(0 10)">
+      
+      <g>
+        <text x="0" y="8" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.18em" fill="#5A6580">MIN</text>
+        <text x="0" y="26" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" letter-spacing="0.02em" fill="#E4ECF7">142</text>
+        <text x="44" y="26" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.16em" fill="#5A6580">runs/m</text>
+        <line x1="0" y1="34" x2="86" y2="34" stroke="#0E2A3A"></line>
+      </g>
+      
+      <g transform="translate(140 0)">
+        <text x="0" y="8" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.18em" fill="#A98DF9">MEAN</text>
+        <text x="0" y="26" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" letter-spacing="0.02em" fill="#A98DF9">1,402</text>
+        <text x="62" y="26" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.16em" fill="#5A6580">runs/m</text>
+        <line x1="0" y1="34" x2="86" y2="34" stroke="#A98DF9" stroke-opacity="0.5"></line>
+      </g>
+      
+      <g transform="translate(280 0)">
+        <text x="0" y="8" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.18em" fill="#7AF6FF">PEAK</text>
+        <text x="0" y="26" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" letter-spacing="0.02em" fill="#7AF6FF" filter="url(#tr-glow)">3,142</text>
+        <text x="58" y="26" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.16em" fill="#5A6580">runs/m</text>
+        <line x1="0" y1="34" x2="86" y2="34" stroke="#7AF6FF" stroke-opacity="0.65"></line>
+      </g>
+      
+      <g transform="translate(420 0)">
+        <text x="0" y="8" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.18em" fill="#FF4D6D">▲ ANOM</text>
+        <text x="0" y="26" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" letter-spacing="0.02em" fill="#FF4D6D" filter="url(#tr-glow)">04</text>
+        <text x="30" y="26" font-family="JetBrains Mono, monospace" font-size="6.5" letter-spacing="0.16em" fill="#5A6580">events</text>
+        <line x1="0" y1="34" x2="86" y2="34" stroke="#FF4D6D" stroke-opacity="0.5"></line>
+      </g>
+    </g>
+  </g>
+
+  
+  <line x1="20" y1="334" x2="580" y2="334" stroke="#0E2A3A"></line>
+  <g font-family="JetBrains Mono, monospace" font-size="7" letter-spacing="0.18em">
+    <text x="26" y="346" fill="#5A6580">DETECTOR · BAND 1–4</text>
+    <text x="222" y="346" fill="#5A6580">FILTER ▎ rolling 5m</text>
+    <text x="396" y="346" fill="#5A6580">SAMPLES ▎ 1,402</text>
+    <text x="580" y="346" text-anchor="end" fill="#7AF6FF">◉ CALIBRATED</text>
+  </g>
+</svg>

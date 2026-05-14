@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--op-base);color:var(--op-fg-1);}
+  .wrap{padding:18px 22px;}
+  .row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+  .sw{height:120px;background:var(--op-elev-1);border:1px solid var(--op-line);padding:12px;display:flex;flex-direction:column;justify-content:space-between;position:relative;}
+  .dot{width:22px;height:22px;border-radius:50%;}
+  .name{font-family:var(--op-font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--op-fg-2);}
+  .hex{font-family:var(--op-font-mono);font-size:10px;color:var(--op-fg-3);}
+  .meta{display:flex;flex-direction:column;gap:2px;}
+</style></head>
+<body class="op-body">
+<div class="wrap">
+<div class="row">
+  <div class="sw"><div class="dot" style="background:#00E5FF;box-shadow:0 0 18px -2px rgba(0,229,255,0.7);"></div><div class="meta"><span class="name">cyan · orbit</span><span class="hex">#00E5FF</span></div></div>
+  <div class="sw"><div class="dot" style="background:#B8FF3C;box-shadow:0 0 18px -2px rgba(184,255,60,0.7);"></div><div class="meta"><span class="name">lime · active</span><span class="hex">#B8FF3C</span></div></div>
+  <div class="sw"><div class="dot" style="background:#FF2E8E;box-shadow:0 0 18px -2px rgba(255,46,142,0.7);"></div><div class="meta"><span class="name">magenta · alert</span><span class="hex">#FF2E8E</span></div></div>
+  <div class="sw"><div class="dot" style="background:#FFB627;box-shadow:0 0 18px -2px rgba(255,182,39,0.7);"></div><div class="meta"><span class="name">amber · warn</span><span class="hex">#FFB627</span></div></div>
+  <div class="sw"><div class="dot" style="background:#8B5CF6;box-shadow:0 0 18px -2px rgba(139,92,246,0.7);"></div><div class="meta"><span class="name">violet · replay</span><span class="hex">#8B5CF6</span></div></div>
+</div>
+</div>
+</body></html>

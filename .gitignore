@@ -1,0 +1,26 @@
+.DS_Store
+
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+DerivedData/
+
+# SwiftPM build output
+.build/
+.swiftpm/
+
+# Local Python and tool environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Local credentials and environment files
+.env
+.env.*
+*.pem
+*.p12
+*.mobileprovision
+
+# OrbitPlane local runtime streams
+.orbitplane/

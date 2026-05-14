@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "orbitplane.teaching.case.v1",
+  "caseId": "python-variables-beginner-001",
+  "title": "第一次理解 Python 变量",
+  "language": "python",
+  "learnerLevel": "absolute_beginner",
+  "conceptIds": [
+    "python.variables.assignment"
+  ],
+  "evidenceEventIds": [
+    "evt_mcp_teaching_case_003",
+    "evt_mcp_teaching_case_005"
+  ],
+  "anchors": [
+    {
+      "anchorId": "anchor-name-assignment",
+      "filePath": "examples/python_variables.py",
+      "commit": "594c8f3",
+      "startLine": 1,
+      "endLine": 1,
+      "symbol": null,
+      "anchorKind": "statement",
+      "snippetHash": "sha256:example"
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "step-variable-is-name",
+      "title": "变量是给值起名字",
+      "body": "这一行把字符串保存到 name 这个名字下面。之后代码可以用 name 找回这个值。",
+      "anchorIds": [
+        "anchor-name-assignment"
+      ],
+      "conceptIds": [
+        "python.variables.assignment"
+      ],
+      "evidenceEventIds": [
+        "evt_mcp_teaching_case_003"
+      ]
+    }
+  ]
+}
