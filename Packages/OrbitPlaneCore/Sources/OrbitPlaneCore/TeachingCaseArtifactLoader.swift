@@ -30,6 +30,7 @@ public enum OPTeachingCaseArtifactLoader {
     public static let defaultAllowedRootURLs: [URL] = [
         URL(fileURLWithPath: "/Volumes/2TB/Dev/OrbitPlane/.orbitplane/teaching-cases", isDirectory: true),
         URL(fileURLWithPath: "/Volumes/2TB/Dev/OrbitPlane/CodexIntegration/fixtures/teaching_cases", isDirectory: true),
+        URL(fileURLWithPath: "/Volumes/2TB/Dev/modules/MCP/OrbitPlaneTeaching/fixtures/teaching_cases", isDirectory: true),
     ]
 
     public static func load(
