@@ -1254,31 +1254,6 @@ struct CodexNarrativePanel: View {
         return teachingCase.metadata.steps[index]
     }
 
-    private var activeAnchors: [OPTeachingCaseAnchor] {
-        guard let teachingCase = activeTeachingCase, let step = activeTeachingCaseStep else {
-            return []
-        }
-
-        let anchorIds = Set(step.anchorIds)
-        return teachingCase.metadata.anchors.filter { anchorIds.contains($0.anchorId) }
-    }
-
-    private var activeSnippet: OPTeachingCaseCodeSnippet? {
-        guard let teachingCase = activeTeachingCase else {
-            return nil
-        }
-
-        if let selectedAnchorId,
-           let selectedSnippet = teachingCase.codeSnippets.first(where: { $0.anchorId == selectedAnchorId }) {
-            return selectedSnippet
-        }
-
-        guard let anchorId = activeTeachingCaseStep?.anchorIds.first else {
-            return nil
-        }
-        return teachingCase.codeSnippets.first { $0.anchorId == anchorId }
-    }
-
     private var activeConceptIds: [String] {
         activeTeachingCaseStep?.conceptIds ?? activeTeachingCase?.metadata.conceptIds ?? []
     }
@@ -1300,7 +1275,7 @@ struct CodexNarrativePanel: View {
 
     @ViewBuilder
     private func artifactNarrative(_ teachingCase: OPTeachingCaseArtifact) -> some View {
-        Text("ANCHOR TEACHING // \(selectedAnchorId ?? activeTeachingCaseStep?.anchorIds.first ?? "NO ANCHOR")")
+        Text("TEACHING NOTE")
             .font(OrbitTheme.labelFont())
             .tracking(OrbitTheme.labelTracking)
             .foregroundStyle(OrbitTheme.textMuted)
@@ -1317,8 +1292,6 @@ struct CodexNarrativePanel: View {
 
         TeachingCaseSummaryCard(
             teachingCase: teachingCase,
-            activeAnchors: activeAnchors,
-            activeSnippet: activeSnippet,
             activeConceptIds: activeConceptIds
         )
 
@@ -1334,12 +1307,6 @@ struct CodexNarrativePanel: View {
                 }
             }
         }
-
-        CodexCallout(
-            label: "HOVER LINK",
-            text: "\(selectedAnchorId ?? activeTeachingCaseStep?.anchorIds.first ?? "none") · \(teachingCase.sourceURL.lastPathComponent)",
-            color: OrbitTheme.neonCyan
-        )
     }
 
     private var legacyNarrative: some View {
@@ -1431,8 +1398,6 @@ struct CodexCallout: View {
 
 struct TeachingCaseSummaryCard: View {
     let teachingCase: OPTeachingCaseArtifact
-    let activeAnchors: [OPTeachingCaseAnchor]
-    let activeSnippet: OPTeachingCaseCodeSnippet?
     let activeConceptIds: [String]
 
     var body: some View {
@@ -1453,56 +1418,6 @@ struct TeachingCaseSummaryCard: View {
 
             if !activeConceptIds.isEmpty {
                 FlowTagRow(tags: activeConceptIds, color: OrbitTheme.neonCyan)
-            }
-
-            if let activeSnippet {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("ACTIVE CODE")
-                        .font(OrbitTheme.labelFont())
-                        .tracking(OrbitTheme.labelTracking)
-                        .foregroundStyle(OrbitTheme.textMuted)
-
-                    Text(activeSnippet.code)
-                        .font(OrbitTheme.monoFont(12, weight: .medium))
-                        .foregroundStyle(OrbitTheme.textPrimary)
-                        .textSelection(.enabled)
-                        .padding(10)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(OrbitTheme.bgVoid.opacity(0.72))
-                        .overlay(Rectangle().stroke(OrbitTheme.neonGreen.opacity(0.22), lineWidth: 1))
-                }
-            }
-
-            if !activeAnchors.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("CODE ANCHORS")
-                        .font(OrbitTheme.labelFont())
-                        .tracking(OrbitTheme.labelTracking)
-                        .foregroundStyle(OrbitTheme.textMuted)
-
-                    ForEach(activeAnchors, id: \.anchorId) { anchor in
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text("\(anchor.filePath):\(anchor.startLine)-\(anchor.endLine)")
-                                .font(OrbitTheme.monoFont(11, weight: .semibold))
-                                .foregroundStyle(OrbitTheme.textPrimary)
-
-                            HStack(spacing: 6) {
-                                if let anchorKind = anchor.anchorKind {
-                                    Text(anchorKind.uppercased())
-                                }
-                                if let snippetHash = anchor.snippetHash {
-                                    Text(snippetHash)
-                                }
-                            }
-                            .font(OrbitTheme.labelFont(9, weight: .medium))
-                            .tracking(1.0)
-                            .foregroundStyle(OrbitTheme.textMuted)
-                        }
-                        .padding(10)
-                        .background(OrbitTheme.bgVoid.opacity(0.58))
-                        .overlay(Rectangle().stroke(OrbitTheme.neonCyan.opacity(0.22), lineWidth: 1))
-                    }
-                }
             }
         }
         .padding(14)
