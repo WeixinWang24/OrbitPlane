@@ -237,6 +237,8 @@ import Testing
     #expect(artifact.metadata.title == "第一次理解 Python 变量")
     #expect(artifact.metadata.steps.first?.body.contains("name") == true)
     #expect(artifact.metadata.anchors.first?.filePath == "examples/python_variables.py")
+    #expect(artifact.codeSnippets.first?.anchorId == "anchor-name-assignment")
+    #expect(artifact.codeSnippets.first?.code == #"name = "Ada""#)
 }
 
 @Test func teachingCaseArtifactLoaderRejectsOutsideAllowedRoots() throws {

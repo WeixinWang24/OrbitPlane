@@ -5,17 +5,30 @@ public struct OPTeachingCaseArtifact: Equatable, Sendable {
     public var link: OPCodexArtifactLinkedPayload
     public var html: String
     public var metadata: OPTeachingCaseMetadata
+    public var codeSnippets: [OPTeachingCaseCodeSnippet]
 
     public init(
         sourceURL: URL,
         link: OPCodexArtifactLinkedPayload,
         html: String,
-        metadata: OPTeachingCaseMetadata
+        metadata: OPTeachingCaseMetadata,
+        codeSnippets: [OPTeachingCaseCodeSnippet] = []
     ) {
         self.sourceURL = sourceURL
         self.link = link
         self.html = html
         self.metadata = metadata
+        self.codeSnippets = codeSnippets
+    }
+}
+
+public struct OPTeachingCaseCodeSnippet: Equatable, Sendable {
+    public var anchorId: String
+    public var code: String
+
+    public init(anchorId: String, code: String) {
+        self.anchorId = anchorId
+        self.code = code
     }
 }
 
@@ -49,7 +62,8 @@ public enum OPTeachingCaseArtifactLoader {
             sourceURL: sourceURL,
             link: link,
             html: html,
-            metadata: metadata
+            metadata: metadata,
+            codeSnippets: extractCodeSnippets(fromHTML: html)
         )
     }
 
@@ -76,6 +90,31 @@ public enum OPTeachingCaseArtifactLoader {
         return metadata
     }
 
+    public static func extractCodeSnippets(fromHTML html: String) -> [OPTeachingCaseCodeSnippet] {
+        let pattern = #"<pre[^>]*data-anchor-id=["']([^"']+)["'][^>]*>\s*<code[^>]*>(.*?)</code>\s*</pre>"#
+        guard let regex = try? NSRegularExpression(
+            pattern: pattern,
+            options: [.caseInsensitive, .dotMatchesLineSeparators]
+        ) else {
+            return []
+        }
+
+        let nsRange = NSRange(html.startIndex..<html.endIndex, in: html)
+        return regex.matches(in: html, range: nsRange).compactMap { match in
+            guard
+                let anchorRange = Range(match.range(at: 1), in: html),
+                let codeRange = Range(match.range(at: 2), in: html)
+            else {
+                return nil
+            }
+
+            return OPTeachingCaseCodeSnippet(
+                anchorId: String(html[anchorRange]),
+                code: decodeHTMLEntities(String(html[codeRange]).trimmingCharacters(in: .whitespacesAndNewlines))
+            )
+        }
+    }
+
     private static func validatedURL(for path: String, allowedRootURLs: [URL]) throws -> URL {
         let url = URL(fileURLWithPath: path).standardizedFileURL
         let allowedRoots = allowedRootURLs.map { $0.standardizedFileURL.path }
@@ -87,5 +126,14 @@ public enum OPTeachingCaseArtifactLoader {
             throw OPTeachingCaseArtifactError.pathOutsideAllowedRoots(path)
         }
         return url
+    }
+
+    private static func decodeHTMLEntities(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "&lt;", with: "<")
+            .replacingOccurrences(of: "&gt;", with: ">")
+            .replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&quot;", with: "\"")
+            .replacingOccurrences(of: "&#39;", with: "'")
     }
 }

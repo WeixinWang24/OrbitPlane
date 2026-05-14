@@ -183,10 +183,13 @@ struct CodexTutorialDisplayModel {
 
     init(projection: OPCodexProjection, source: OPCodexEventStreamSnapshot? = nil) throws {
         let diff = projection.diffs.first
-        let filePath = diff?.filePath ?? (projection.events.isEmpty ? "policy/retry.swift" : "waiting for DIFF_UPDATED")
+        let artifactResult = Self.loadTeachingCases(from: projection.artifactLinks)
+        let firstAnchorPath = artifactResult.cases.last?.metadata.anchors.first.map {
+            "\($0.filePath):\($0.startLine)-\($0.endLine)"
+        }
+        let filePath = diff?.filePath ?? firstAnchorPath ?? (projection.events.isEmpty ? "policy/retry.swift" : "waiting for DIFF_UPDATED")
         let additions = diff?.stats.additions ?? 0
         let deletions = diff?.stats.deletions ?? 0
-        let artifactResult = Self.loadTeachingCases(from: projection.artifactLinks)
 
         self.sessionId = projection.session?.sessionId ?? "codex_dummy_001"
         self.branch = projection.session?.branch ?? "retry-with-cache"
@@ -195,8 +198,8 @@ struct CodexTutorialDisplayModel {
         self.deletions = deletions
         self.steps = Self.steps(from: projection, teachingCases: artifactResult.cases)
         self.files = Self.files(from: projection, teachingCases: artifactResult.cases, fallbackFilePath: filePath)
-        self.diffLines = Self.diffLines(from: diff)
-        self.terminalLines = Self.terminalLines(from: projection.terminalOutputs)
+        self.diffLines = Self.diffLines(from: diff, teachingCases: artifactResult.cases)
+        self.terminalLines = Self.terminalLines(from: projection.terminalOutputs, teachingCases: artifactResult.cases)
         self.tutorialSteps = projection.tutorialSteps
         self.teachingNotes = projection.teachingNotes
         self.teachingCases = artifactResult.cases
@@ -378,8 +381,33 @@ struct CodexTutorialDisplayModel {
         return (cases, issues)
     }
 
-    private static func diffLines(from payload: OPCodexDiffPayload?) -> [CodexDiffLine] {
+    private static func diffLines(
+        from payload: OPCodexDiffPayload?,
+        teachingCases: [OPTeachingCaseArtifact] = []
+    ) -> [CodexDiffLine] {
         guard let payload else {
+            if let teachingCase = teachingCases.last, !teachingCase.codeSnippets.isEmpty {
+                var lines = [
+                    CodexDiffLine(kind: .meta, number: "", text: "\(teachingCase.metadata.title) · HTML anchor snippets"),
+                ]
+
+                let anchorsById = Dictionary(uniqueKeysWithValues: teachingCase.metadata.anchors.map { ($0.anchorId, $0) })
+                for snippet in teachingCase.codeSnippets {
+                    let anchor = anchorsById[snippet.anchorId]
+                    lines.append(.init(
+                        kind: .meta,
+                        number: "",
+                        text: anchor.map { "\($0.filePath):\($0.startLine)-\($0.endLine)" } ?? snippet.anchorId
+                    ))
+
+                    let startLine = anchor?.startLine ?? 1
+                    for (offset, codeLine) in snippet.code.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
+                        lines.append(.init(kind: .context, number: "\(startLine + offset)", text: String(codeLine)))
+                    }
+                }
+                return lines
+            }
+
             return [
                 .init(kind: .meta, number: "", text: "waiting for DIFF_UPDATED"),
                 .init(kind: .context, number: "", text: "MCP stream is connected. No diff payload has arrived yet."),
@@ -408,7 +436,25 @@ struct CodexTutorialDisplayModel {
         return lines
     }
 
-    private static func terminalLines(from outputs: [OPCodexTerminalOutputPayload]) -> [CodexTerminalLine] {
+    private static func terminalLines(
+        from outputs: [OPCodexTerminalOutputPayload],
+        teachingCases: [OPTeachingCaseArtifact] = []
+    ) -> [CodexTerminalLine] {
+        if let teachingCase = teachingCases.last, outputs.isEmpty {
+            return [
+                .init(
+                    prompt: "✓",
+                    text: "HTML teaching case loaded: \(teachingCase.metadata.steps.count) steps, \(teachingCase.metadata.anchors.count) anchors, \(teachingCase.codeSnippets.count) snippets",
+                    color: OrbitTheme.neonGreen
+                ),
+                .init(
+                    prompt: "·",
+                    text: "source: \(teachingCase.sourceURL.path)",
+                    color: OrbitTheme.textMuted
+                ),
+            ]
+        }
+
         if outputs.isEmpty {
             return [
                 .init(prompt: "··", text: "waiting for TERMINAL_OUTPUT events", color: OrbitTheme.textMuted),
