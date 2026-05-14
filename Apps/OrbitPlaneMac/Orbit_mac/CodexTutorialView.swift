@@ -1286,117 +1286,123 @@ struct CodexNarrativePanel: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("STEP \(selectedStep) // \(activeTeachingCase == nil ? (model.isLiveStream ? "LOCAL JSONL" : "FALLBACK") : "ANCHOR TEACHING")")
-                    .font(OrbitTheme.labelFont())
-                    .tracking(OrbitTheme.labelTracking)
-                    .foregroundStyle(OrbitTheme.textMuted)
-
-                Text(activeTeachingCaseStep?.title ?? activeNote?.title ?? model.tutorialTitle)
-                .font(.system(size: 24, weight: .semibold))
-                .foregroundStyle(OrbitTheme.textPrimary)
-                .lineLimit(3)
-
-                Text(activeTeachingCaseStep?.body ?? activeNote?.body ?? activeStepPayload?.summary ?? "No teaching note has arrived yet. OrbitPlane is watching the local Codex event cache for MCP-generated tutorial events.")
-                    .font(.system(size: 14))
-                    .lineSpacing(4)
-                    .foregroundStyle(OrbitTheme.textSecondary)
-
                 if let teachingCase = activeTeachingCase {
-                    TeachingCaseSummaryCard(
-                        teachingCase: teachingCase,
-                        activeAnchors: activeAnchors,
-                        activeSnippet: activeSnippet,
-                        activeConceptIds: activeConceptIds
-                    )
-                }
-
-                if let activeStepPayload, !activeStepPayload.learningObjectives.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("LEARNING OBJECTIVES")
-                            .font(OrbitTheme.labelFont())
-                            .tracking(OrbitTheme.labelTracking)
-                            .foregroundStyle(OrbitTheme.textMuted)
-
-                        ForEach(activeStepPayload.learningObjectives, id: \.self) { objective in
-                            ChecklistRow(text: objective, done: true)
-                        }
-                    }
-                }
-
-                if !model.artifactLoadIssues.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("ARTIFACT ISSUES")
-                            .font(OrbitTheme.labelFont())
-                            .tracking(OrbitTheme.labelTracking)
-                            .foregroundStyle(OrbitTheme.textMuted)
-
-                        ForEach(model.artifactLoadIssues, id: \.self) { issue in
-                            CodexCallout(label: "LOAD FAILED", text: issue, color: OrbitTheme.neonPink)
-                        }
-                    }
-                }
-
-                CodexCallout(
-                    label: activeTeachingCase == nil ? (activeNote?.tone.rawValue ?? "EVENT CACHE") : "HOVER LINK",
-                    text: activeTeachingCase.map {
-                        let anchor = selectedAnchorId ?? activeTeachingCaseStep?.anchorIds.first ?? "none"
-                        return "\(anchor) · \($0.sourceURL.lastPathComponent)"
-                    }
-                        ?? "\(model.eventCount) events from \(model.sourceName)",
-                    color: OrbitTheme.neonCyan
-                )
-
-                if teachingNotes.count > 1 {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("TEACHING NOTES")
-                            .font(OrbitTheme.labelFont())
-                            .tracking(OrbitTheme.labelTracking)
-                            .foregroundStyle(OrbitTheme.textMuted)
-
-                        ForEach(teachingNotes, id: \.noteId) { note in
-                            CodexCallout(
-                                label: note.tone.rawValue,
-                                text: "\(note.title)\n\(note.body)",
-                                color: note.noteId == activeNote?.noteId ? OrbitTheme.neonCyan : OrbitTheme.neonPurple
-                            )
-                        }
-                    }
-                }
-
-                if let finding = reviewFindings.first {
-                    CodexCallout(
-                        label: "REVIEW // \(finding.severity.rawValue)",
-                        text: "\(finding.title) \(finding.body)",
-                        color: OrbitTheme.neonPurple
-                    )
+                    artifactNarrative(teachingCase)
                 } else {
-                    CodexCallout(
-                        label: "REVIEW NOTE",
-                        text: "`onTimeout` receives the full tool context. Return `ctx.skip(name)` to advance without failing the mission.",
-                        color: OrbitTheme.neonPurple
-                    )
-                }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("CHECKLIST")
-                        .font(OrbitTheme.labelFont())
-                        .tracking(OrbitTheme.labelTracking)
-                        .foregroundStyle(OrbitTheme.textMuted)
-
-                    ChecklistRow(text: "Diff is small and policy-scoped", done: true)
-                    ChecklistRow(text: "Sandbox replay passes", done: true)
-                    ChecklistRow(text: "Graduation requires operator review", done: false)
-                }
-
-                HStack(spacing: 8) {
-                    CodexActionButton(title: "BACK", color: OrbitTheme.textSecondary, primary: false)
-                    CodexActionButton(title: "RUN SANDBOX", color: OrbitTheme.neonCyan, primary: true)
+                    legacyNarrative
                 }
             }
             .padding(22)
         }
         .background(OrbitTheme.bgSurface.opacity(0.96))
         .overlay(Rectangle().fill(OrbitTheme.border).frame(width: 1), alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func artifactNarrative(_ teachingCase: OPTeachingCaseArtifact) -> some View {
+        Text("ANCHOR TEACHING // \(selectedAnchorId ?? activeTeachingCaseStep?.anchorIds.first ?? "NO ANCHOR")")
+            .font(OrbitTheme.labelFont())
+            .tracking(OrbitTheme.labelTracking)
+            .foregroundStyle(OrbitTheme.textMuted)
+
+        Text(activeTeachingCaseStep?.title ?? teachingCase.metadata.title)
+            .font(.system(size: 24, weight: .semibold))
+            .foregroundStyle(OrbitTheme.textPrimary)
+            .lineLimit(3)
+
+        Text(activeTeachingCaseStep?.body ?? "Hover a code anchor to inspect its teaching note.")
+            .font(.system(size: 14))
+            .lineSpacing(4)
+            .foregroundStyle(OrbitTheme.textSecondary)
+
+        TeachingCaseSummaryCard(
+            teachingCase: teachingCase,
+            activeAnchors: activeAnchors,
+            activeSnippet: activeSnippet,
+            activeConceptIds: activeConceptIds
+        )
+
+        if !model.artifactLoadIssues.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("ARTIFACT ISSUES")
+                    .font(OrbitTheme.labelFont())
+                    .tracking(OrbitTheme.labelTracking)
+                    .foregroundStyle(OrbitTheme.textMuted)
+
+                ForEach(model.artifactLoadIssues, id: \.self) { issue in
+                    CodexCallout(label: "LOAD FAILED", text: issue, color: OrbitTheme.neonPink)
+                }
+            }
+        }
+
+        CodexCallout(
+            label: "HOVER LINK",
+            text: "\(selectedAnchorId ?? activeTeachingCaseStep?.anchorIds.first ?? "none") · \(teachingCase.sourceURL.lastPathComponent)",
+            color: OrbitTheme.neonCyan
+        )
+    }
+
+    private var legacyNarrative: some View {
+        Group {
+            Text("STEP \(selectedStep) // \(model.isLiveStream ? "LOCAL JSONL" : "FALLBACK")")
+                .font(OrbitTheme.labelFont())
+                .tracking(OrbitTheme.labelTracking)
+                .foregroundStyle(OrbitTheme.textMuted)
+
+            Text(activeNote?.title ?? model.tutorialTitle)
+                .font(.system(size: 24, weight: .semibold))
+                .foregroundStyle(OrbitTheme.textPrimary)
+                .lineLimit(3)
+
+            Text(activeNote?.body ?? activeStepPayload?.summary ?? "No teaching note has arrived yet. OrbitPlane is watching the local Codex event cache for MCP-generated tutorial events.")
+                .font(.system(size: 14))
+                .lineSpacing(4)
+                .foregroundStyle(OrbitTheme.textSecondary)
+
+            if let activeStepPayload, !activeStepPayload.learningObjectives.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("LEARNING OBJECTIVES")
+                        .font(OrbitTheme.labelFont())
+                        .tracking(OrbitTheme.labelTracking)
+                        .foregroundStyle(OrbitTheme.textMuted)
+
+                    ForEach(activeStepPayload.learningObjectives, id: \.self) { objective in
+                        ChecklistRow(text: objective, done: true)
+                    }
+                }
+            }
+
+            CodexCallout(
+                label: activeNote?.tone.rawValue ?? "EVENT CACHE",
+                text: "\(model.eventCount) events from \(model.sourceName)",
+                color: OrbitTheme.neonCyan
+            )
+
+            if teachingNotes.count > 1 {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("TEACHING NOTES")
+                        .font(OrbitTheme.labelFont())
+                        .tracking(OrbitTheme.labelTracking)
+                        .foregroundStyle(OrbitTheme.textMuted)
+
+                    ForEach(teachingNotes, id: \.noteId) { note in
+                        CodexCallout(
+                            label: note.tone.rawValue,
+                            text: "\(note.title)\n\(note.body)",
+                            color: note.noteId == activeNote?.noteId ? OrbitTheme.neonCyan : OrbitTheme.neonPurple
+                        )
+                    }
+                }
+            }
+
+            if let finding = reviewFindings.first {
+                CodexCallout(
+                    label: "REVIEW // \(finding.severity.rawValue)",
+                    text: "\(finding.title) \(finding.body)",
+                    color: OrbitTheme.neonPurple
+                )
+            }
+        }
     }
 }
 
