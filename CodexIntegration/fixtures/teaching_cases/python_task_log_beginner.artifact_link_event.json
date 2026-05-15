@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "orbitplane.codex.event.v1",
+  "eventId": "evt_python_task_log_case_linked_001",
+  "sequence": 1,
+  "emittedAt": "2026-05-15T00:20:00Z",
+  "producer": {
+    "kind": "MCP",
+    "name": "orbitplane-teaching",
+    "version": "0.1.0"
+  },
+  "session": {
+    "sessionId": "fixture_python_task_log_beginner",
+    "workspaceId": "OrbitPlane",
+    "repoRoot": "/Volumes/2TB/Dev/OrbitPlane",
+    "branch": "main",
+    "commit": null
+  },
+  "eventType": "ARTIFACT_LINKED",
+  "payload": {
+    "artifactType": "TEACHING_CASE_HTML",
+    "caseId": "python-task-log-beginner-001",
+    "path": "/Volumes/2TB/Dev/OrbitPlane/CodexIntegration/fixtures/teaching_cases/python_task_log_beginner.html",
+    "title": "用 Python 写一个任务日志",
+    "conceptIds": [
+      "python.variables.assignment",
+      "python.collections.list",
+      "python.functions.definition",
+      "python.files.io",
+      "python.modules.imports",
+      "python.project.structure"
+    ],
+    "learnerLevel": "absolute_beginner"
+  },
+  "links": [
+    {
+      "kind": "file",
+      "target": "/Volumes/2TB/Dev/OrbitPlane/CodexIntegration/fixtures/teaching_cases/python_task_log_beginner.html",
+      "label": "用 Python 写一个任务日志"
+    }
+  ],
+  "privacy": {
+    "hasSecrets": false,
+    "redactionApplied": false,
+    "redactionNotes": []
+  }
+}

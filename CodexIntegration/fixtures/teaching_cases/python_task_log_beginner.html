@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <title>用 Python 写一个任务日志</title>
+    <script type="application/json" id="orbitplane-teaching-case">
+{
+  "schemaVersion": "orbitplane.teaching.case.v1",
+  "caseId": "python-task-log-beginner-001",
+  "title": "用 Python 写一个任务日志",
+  "language": "python",
+  "learnerLevel": "absolute_beginner",
+  "conceptIds": [
+    "python.variables.assignment",
+    "python.collections.list",
+    "python.functions.definition",
+    "python.files.io",
+    "python.modules.imports",
+    "python.project.structure"
+  ],
+  "evidenceEventIds": [
+    "evt_task_log_case_001",
+    "evt_task_log_case_002",
+    "evt_task_log_case_003",
+    "evt_task_log_case_004"
+  ],
+  "display": {
+    "mode": "interactive_walkthrough",
+    "primaryFile": "examples/task_log.py",
+    "panels": [
+      "steps",
+      "code",
+      "narrative",
+      "terminal"
+    ],
+    "defaultStepId": "step-read-the-file-shape",
+    "actions": [
+      {
+        "actionId": "action-run-script",
+        "label": "运行脚本",
+        "kind": "terminal_command",
+        "command": "python examples/task_log.py"
+      },
+      {
+        "actionId": "action-highlight-next-anchor",
+        "label": "下一个代码点",
+        "kind": "navigate_anchor"
+      }
+    ]
+  },
+  "files": [
+    {
+      "filePath": "examples/task_log.py",
+      "language": "python",
+      "role": "primary",
+      "diffSummary": "+32 -0"
+    },
+    {
+      "filePath": "examples/tasks.txt",
+      "language": "text",
+      "role": "output",
+      "diffSummary": "+2 -0"
+    }
+  ],
+  "defaultStepIdByAnchor": {
+    "anchor-import-path": "step-read-the-file-shape",
+    "anchor-task-list": "step-store-tasks-in-list",
+    "anchor-add-task-function": "step-wrap-add-task",
+    "anchor-save-tasks-function": "step-save-list-to-file",
+    "anchor-output-file": "step-read-the-file-shape"
+  },
+  "anchors": [
+    {
+      "anchorId": "anchor-import-path",
+      "filePath": "examples/task_log.py",
+      "commit": "7bdc522",
+      "startLine": 1,
+      "endLine": 3,
+      "symbol": "Path",
+      "anchorKind": "import",
+      "snippetHash": "sha256:task-log-import-path",
+      "primaryStepId": "step-read-the-file-shape"
+    },
+    {
+      "anchorId": "anchor-task-list",
+      "filePath": "examples/task_log.py",
+      "commit": "7bdc522",
+      "startLine": 6,
+      "endLine": 8,
+      "symbol": "tasks",
+      "anchorKind": "assignment",
+      "snippetHash": "sha256:task-log-list",
+      "primaryStepId": "step-store-tasks-in-list"
+    },
+    {
+      "anchorId": "anchor-add-task-function",
+      "filePath": "examples/task_log.py",
+      "commit": "7bdc522",
+      "startLine": 11,
+      "endLine": 15,
+      "symbol": "add_task",
+      "anchorKind": "function",
+      "snippetHash": "sha256:task-log-add-task",
+      "primaryStepId": "step-wrap-add-task"
+    },
+    {
+      "anchorId": "anchor-save-tasks-function",
+      "filePath": "examples/task_log.py",
+      "commit": "7bdc522",
+      "startLine": 18,
+      "endLine": 24,
+      "symbol": "save_tasks",
+      "anchorKind": "function",
+      "snippetHash": "sha256:task-log-save-tasks",
+      "primaryStepId": "step-save-list-to-file"
+    },
+    {
+      "anchorId": "anchor-main-flow",
+      "filePath": "examples/task_log.py",
+      "commit": "7bdc522",
+      "startLine": 27,
+      "endLine": 32,
+      "symbol": "__main__",
+      "anchorKind": "control_flow",
+      "snippetHash": "sha256:task-log-main-flow"
+    },
+    {
+      "anchorId": "anchor-output-file",
+      "filePath": "examples/tasks.txt",
+      "commit": "7bdc522",
+      "startLine": 1,
+      "endLine": 2,
+      "symbol": null,
+      "anchorKind": "output",
+      "snippetHash": "sha256:task-log-output",
+      "primaryStepId": "step-read-the-file-shape"
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "step-read-the-file-shape",
+      "title": "先看这个小项目的形状",
+      "body": "这个案例有一个 Python 文件和一个输出文件。Python 文件负责收集任务，输出文件保存结果。先理解文件边界，后面每一行代码都会更容易放进脑子里。",
+      "anchorIds": [
+        "anchor-import-path",
+        "anchor-output-file"
+      ],
+      "conceptIds": [
+        "python.modules.imports",
+        "python.project.structure"
+      ],
+      "evidenceEventIds": [
+        "evt_task_log_case_001"
+      ],
+      "projectionRole": "primary",
+      "priority": 90,
+      "prompt": "点击两个 anchor，观察 Python 文件和输出文件分别承担什么责任。"
+    },
+    {
+      "stepId": "step-store-tasks-in-list",
+      "title": "用列表暂存多条任务",
+      "body": "列表像一个按顺序排好的盒子。这里先创建空列表，再一步步把任务文字放进去。",
+      "anchorIds": [
+        "anchor-task-list"
+      ],
+      "conceptIds": [
+        "python.variables.assignment",
+        "python.collections.list"
+      ],
+      "evidenceEventIds": [
+        "evt_task_log_case_002"
+      ],
+      "projectionRole": "primary",
+      "priority": 100,
+      "prompt": "观察 tasks 从空列表开始，后面会被函数更新。"
+    },
+    {
+      "stepId": "step-wrap-add-task",
+      "title": "用函数封装新增任务",
+      "body": "add_task 接收任务列表和一段文字，然后把文字追加到列表末尾。函数让这段动作可以重复使用，而不是每次都手写 append。",
+      "anchorIds": [
+        "anchor-add-task-function"
+      ],
+      "conceptIds": [
+        "python.functions.definition",
+        "python.collections.list"
+      ],
+      "evidenceEventIds": [
+        "evt_task_log_case_003"
+      ],
+      "projectionRole": "primary",
+      "priority": 100,
+      "prompt": "把参数 tasks 和 title 分别对应到函数体里的 append 调用。"
+    },
+    {
+      "stepId": "step-save-list-to-file",
+      "title": "把列表写成文件",
+      "body": "save_tasks 负责把内存里的列表变成磁盘上的文本。Path 负责定位文件，write_text 负责一次性写入内容。",
+      "anchorIds": [
+        "anchor-import-path",
+        "anchor-save-tasks-function",
+        "anchor-output-file"
+      ],
+      "conceptIds": [
+        "python.files.io",
+        "python.modules.imports",
+        "python.collections.list"
+      ],
+      "evidenceEventIds": [
+        "evt_task_log_case_004"
+      ],
+      "projectionRole": "primary",
+      "priority": 95,
+      "prompt": "同时高亮 Path、save_tasks 和输出文件，看数据如何从代码流到文件。"
+    },
+    {
+      "stepId": "step-connect-the-flow",
+      "title": "把三个动作串成流程",
+      "body": "主流程先创建任务列表，再调用 add_task 添加任务，最后调用 save_tasks 保存结果。这个 step 故意引用多个 anchor，用来测试 Plane 能否在一个教学步骤里联动多个代码区域。",
+      "anchorIds": [
+        "anchor-task-list",
+        "anchor-add-task-function",
+        "anchor-save-tasks-function",
+        "anchor-main-flow",
+        "anchor-output-file"
+      ],
+      "conceptIds": [
+        "python.variables.assignment",
+        "python.functions.definition",
+        "python.files.io",
+        "python.project.structure"
+      ],
+      "evidenceEventIds": [
+        "evt_task_log_case_004"
+      ],
+      "projectionRole": "summary",
+      "priority": 10,
+      "prompt": "按 anchor 顺序跳转，复述数据从列表到文件的完整路径。"
+    }
+  ],
+  "terminal": {
+    "command": "python examples/task_log.py",
+    "exitCode": 0,
+    "lines": [
+      "created examples/tasks.txt",
+      "saved 2 tasks",
+      "next: open examples/tasks.txt"
+    ]
+  }
+}
+    </script>
+  </head>
+  <body>
+    <article data-case-id="python-task-log-beginner-001" data-display-mode="interactive_walkthrough">
+      <header>
+        <p>Python / absolute_beginner / interactive walkthrough</p>
+        <h1>用 Python 写一个任务日志</h1>
+      </header>
+
+      <nav aria-label="Teaching steps">
+        <ol>
+          <li><a href="#step-read-the-file-shape">先看这个小项目的形状</a></li>
+          <li><a href="#step-store-tasks-in-list">用列表暂存多条任务</a></li>
+          <li><a href="#step-wrap-add-task">用函数封装新增任务</a></li>
+          <li><a href="#step-save-list-to-file">把列表写成文件</a></li>
+          <li><a href="#step-connect-the-flow">把三个动作串成流程</a></li>
+        </ol>
+      </nav>
+
+      <section aria-label="Code anchors">
+        <h2>examples/task_log.py</h2>
+        <pre data-anchor-id="anchor-import-path"><code>from pathlib import Path
+
+TASK_FILE = Path("examples/tasks.txt")</code></pre>
+
+        <pre data-anchor-id="anchor-task-list"><code>tasks = []</code></pre>
+
+        <pre data-anchor-id="anchor-add-task-function"><code>def add_task(tasks, title):
+    tasks.append(title)
+    return tasks</code></pre>
+
+        <pre data-anchor-id="anchor-save-tasks-function"><code>def save_tasks(tasks, file_path):
+    text = "\n".join(f"- {task}" for task in tasks)
+    file_path.write_text(text + "\n", encoding="utf-8")
+    return len(tasks)</code></pre>
+
+        <pre data-anchor-id="anchor-main-flow"><code>if __name__ == "__main__":
+    add_task(tasks, "read the code")
+    add_task(tasks, "run the script")
+    count = save_tasks(tasks, TASK_FILE)
+    print(f"saved {count} tasks")</code></pre>
+
+        <h2>examples/tasks.txt</h2>
+        <pre data-anchor-id="anchor-output-file"><code>- read the code
+- run the script</code></pre>
+      </section>
+
+      <section id="step-read-the-file-shape" data-step-id="step-read-the-file-shape" data-anchor-ids="anchor-import-path anchor-output-file">
+        <h2>先看这个小项目的形状</h2>
+        <p>这个案例有一个 Python 文件和一个输出文件。Python 文件负责收集任务，输出文件保存结果。</p>
+      </section>
+
+      <section id="step-store-tasks-in-list" data-step-id="step-store-tasks-in-list" data-anchor-ids="anchor-task-list">
+        <h2>用列表暂存多条任务</h2>
+        <p>列表像一个按顺序排好的盒子。这里先创建空列表，再一步步把任务文字放进去。</p>
+      </section>
+
+      <section id="step-wrap-add-task" data-step-id="step-wrap-add-task" data-anchor-ids="anchor-add-task-function">
+        <h2>用函数封装新增任务</h2>
+        <p><code>add_task</code> 接收任务列表和一段文字，然后把文字追加到列表末尾。</p>
+      </section>
+
+      <section id="step-save-list-to-file" data-step-id="step-save-list-to-file" data-anchor-ids="anchor-import-path anchor-save-tasks-function anchor-output-file">
+        <h2>把列表写成文件</h2>
+        <p><code>save_tasks</code> 负责把内存里的列表变成磁盘上的文本。</p>
+      </section>
+
+      <section id="step-connect-the-flow" data-step-id="step-connect-the-flow" data-anchor-ids="anchor-task-list anchor-add-task-function anchor-save-tasks-function anchor-main-flow anchor-output-file">
+        <h2>把三个动作串成流程</h2>
+        <p>这个步骤引用多个 anchor，用来测试 Plane 能否在一个教学步骤里联动多个代码区域。</p>
+      </section>
+
+      <section aria-label="Terminal output">
+        <h2>terminal</h2>
+        <pre><code>$ python examples/task_log.py
+created examples/tasks.txt
+saved 2 tasks
+next: open examples/tasks.txt</code></pre>
+      </section>
+    </article>
+  </body>
+</html>

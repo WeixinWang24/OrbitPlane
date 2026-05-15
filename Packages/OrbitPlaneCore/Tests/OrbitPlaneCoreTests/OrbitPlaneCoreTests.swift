@@ -241,6 +241,26 @@ import Testing
     #expect(artifact.codeSnippets.first?.code == #"name = "Ada""#)
 }
 
+@Test func complexTeachingCaseLoadsExplicitAnchorProjectionMetadata() throws {
+    let eventURL = repoRoot()
+        .appendingPathComponent("CodexIntegration/fixtures/teaching_cases/python_task_log_beginner.artifact_link_event.json")
+    let event = try OPCodexEventDecoder.decodeEvent(from: Data(contentsOf: eventURL))
+
+    var store = OPCodexEventStore()
+    try store.ingest([event])
+    let projection = OPCodexProjector.project(store)
+    let link = try projection.artifactLinks.first.unwrap()
+    let artifact = try OPTeachingCaseArtifactLoader.load(link: link)
+
+    #expect(artifact.metadata.caseId == "python-task-log-beginner-001")
+    #expect(artifact.metadata.anchors.count == 6)
+    #expect(artifact.codeSnippets.count == 6)
+    #expect(artifact.metadata.defaultStepIdByAnchor?["anchor-output-file"] == "step-read-the-file-shape")
+    #expect(artifact.metadata.anchors.first(where: { $0.anchorId == "anchor-task-list" })?.primaryStepId == "step-store-tasks-in-list")
+    #expect(artifact.metadata.steps.first(where: { $0.stepId == "step-connect-the-flow" })?.projectionRole == .summary)
+    #expect(artifact.metadata.steps.first(where: { $0.stepId == "step-store-tasks-in-list" })?.priority == 100)
+}
+
 @Test func teachingCaseArtifactLoaderRejectsOutsideAllowedRoots() throws {
     let link = OPCodexArtifactLinkedPayload(
         artifactType: .teachingCaseHTML,

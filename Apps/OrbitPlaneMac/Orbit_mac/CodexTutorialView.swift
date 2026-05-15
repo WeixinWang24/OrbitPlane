@@ -14,6 +14,32 @@ struct CodexTutorialView: View {
         eventSource.model
     }
 
+    private var activeTeachingCase: OPTeachingCaseArtifact? {
+        model.teachingCases.last
+    }
+
+    private var activeTeachingCaseStep: OPTeachingCaseStep? {
+        guard let activeTeachingCase else {
+            return nil
+        }
+        return TeachingCaseProjection.activeStep(
+            in: activeTeachingCase,
+            selectedStep: selectedStep,
+            selectedAnchorId: selectedAnchorId,
+            selectedCaseStepId: selectedCaseStepId
+        )
+    }
+
+    private var highlightedAnchorIds: Set<String> {
+        if let activeTeachingCaseStep {
+            return Set(activeTeachingCaseStep.anchorIds)
+        }
+        if let selectedAnchorId {
+            return [selectedAnchorId]
+        }
+        return []
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             CodexTopBar(
@@ -43,14 +69,15 @@ struct CodexTutorialView: View {
                     diff: model.diffLines,
                     terminalLines: model.terminalLines,
                     selectedAnchorId: $selectedAnchorId,
-                    selectedCaseStepId: $selectedCaseStepId
+                    selectedCaseStepId: $selectedCaseStepId,
+                    highlightedAnchorIds: highlightedAnchorIds
                 )
                 .frame(minWidth: 520)
 
                 CodexNarrativePanel(
                     model: model,
                     selectedStep: selectedStep,
-                    selectedAnchorId: selectedAnchorId,
+                    selectedAnchorId: $selectedAnchorId,
                     selectedCaseStepId: $selectedCaseStepId,
                     teachingNotes: model.teachingNotes,
                     reviewFindings: model.reviewFindings
@@ -137,6 +164,82 @@ struct CodexReviewFinding: Identifiable {
     let title: String
     let body: String
     let severity: OPCodexReviewSeverity
+}
+
+private enum TeachingCaseProjection {
+    static func activeStep(
+        in teachingCase: OPTeachingCaseArtifact,
+        selectedStep: Int,
+        selectedAnchorId: String?,
+        selectedCaseStepId: String?
+    ) -> OPTeachingCaseStep? {
+        if let selectedCaseStepId,
+           let selectedStep = teachingCase.metadata.steps.first(where: { $0.stepId == selectedCaseStepId }) {
+            return selectedStep
+        }
+
+        if let selectedAnchorId,
+           let anchoredStep = bestStep(for: selectedAnchorId, in: teachingCase) {
+            return anchoredStep
+        }
+
+        guard !teachingCase.metadata.steps.isEmpty else {
+            return nil
+        }
+        let index = min(max(selectedStep - 1, 0), teachingCase.metadata.steps.count - 1)
+        return teachingCase.metadata.steps[index]
+    }
+
+    static func relatedSteps(
+        in teachingCase: OPTeachingCaseArtifact,
+        for anchorId: String?
+    ) -> [OPTeachingCaseStep] {
+        guard let anchorId else {
+            return []
+        }
+        return teachingCase.metadata.steps.filter { $0.anchorIds.contains(anchorId) }
+    }
+
+    static func leadAnchorId(for step: OPTeachingCaseStep, currentAnchorId: String?) -> String? {
+        if let currentAnchorId, step.anchorIds.contains(currentAnchorId) {
+            return currentAnchorId
+        }
+        return step.anchorIds.first
+    }
+
+    private static func bestStep(
+        for anchorId: String,
+        in teachingCase: OPTeachingCaseArtifact
+    ) -> OPTeachingCaseStep? {
+        if let explicitStepId = teachingCase.metadata.defaultStepIdByAnchor?[anchorId],
+           let explicitStep = teachingCase.metadata.steps.first(where: { $0.stepId == explicitStepId && $0.anchorIds.contains(anchorId) }),
+           explicitStep.projectionRole != .summary {
+            return explicitStep
+        }
+
+        if let primaryStepId = teachingCase.metadata.anchors.first(where: { $0.anchorId == anchorId })?.primaryStepId,
+           let primaryStep = teachingCase.metadata.steps.first(where: { $0.stepId == primaryStepId && $0.anchorIds.contains(anchorId) }),
+           primaryStep.projectionRole != .summary {
+            return primaryStep
+        }
+
+        return teachingCase.metadata.steps
+            .enumerated()
+            .filter { $0.element.anchorIds.contains(anchorId) }
+            .sorted { lhs, rhs in
+                let lhsPriority = lhs.element.priority ?? 0
+                let rhsPriority = rhs.element.priority ?? 0
+                if lhsPriority != rhsPriority {
+                    return lhsPriority > rhsPriority
+                }
+                if lhs.element.anchorIds.count == rhs.element.anchorIds.count {
+                    return lhs.offset < rhs.offset
+                }
+                return lhs.element.anchorIds.count < rhs.element.anchorIds.count
+            }
+            .first?
+            .element
+    }
 }
 
 struct CodexTutorialDisplayModel {
@@ -908,6 +1011,7 @@ struct CodexWorkSurface: View {
     let terminalLines: [CodexTerminalLine]
     @Binding var selectedAnchorId: String?
     @Binding var selectedCaseStepId: String?
+    let highlightedAnchorIds: Set<String>
 
     var body: some View {
         VSplitView {
@@ -925,7 +1029,8 @@ struct CodexWorkSurface: View {
                         CodexDiffPanel(
                             lines: diff,
                             selectedAnchorId: $selectedAnchorId,
-                            selectedCaseStepId: $selectedCaseStepId
+                            selectedCaseStepId: $selectedCaseStepId,
+                            highlightedAnchorIds: highlightedAnchorIds
                         )
                     case .editor:
                         CodexEditorPanel()
@@ -1000,31 +1105,45 @@ struct CodexDiffPanel: View {
     let lines: [CodexDiffLine]
     @Binding var selectedAnchorId: String?
     @Binding var selectedCaseStepId: String?
+    let highlightedAnchorIds: Set<String>
 
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 0) {
-                ForEach(lines) { line in
-                    CodexDiffRow(
-                        line: line,
-                        isSelectedAnchor: line.anchorId != nil && line.anchorId == selectedAnchorId
-                    )
-                    .contentShape(Rectangle())
-                    .onHover { isHovered in
-                        if isHovered, let anchorId = line.anchorId {
-                            selectedAnchorId = anchorId
-                            selectedCaseStepId = nil
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(lines) { line in
+                        CodexDiffRow(
+                            line: line,
+                            isSelectedAnchor: line.anchorId != nil && line.anchorId == selectedAnchorId,
+                            isLinkedAnchor: line.anchorId.map { highlightedAnchorIds.contains($0) } ?? false
+                        )
+                        .id(line.id)
+                        .contentShape(Rectangle())
+                        .onHover { isHovered in
+                            if isHovered, let anchorId = line.anchorId {
+                                selectedAnchorId = anchorId
+                                selectedCaseStepId = nil
+                            }
                         }
-                    }
-                    .onTapGesture {
-                        if let anchorId = line.anchorId {
-                            selectedAnchorId = anchorId
-                            selectedCaseStepId = nil
+                        .onTapGesture {
+                            if let anchorId = line.anchorId {
+                                selectedAnchorId = anchorId
+                                selectedCaseStepId = nil
+                            }
                         }
                     }
                 }
+                .padding(.bottom, 14)
             }
-            .padding(.bottom, 14)
+            .onChange(of: selectedAnchorId) { _, anchorId in
+                guard let anchorId,
+                      let targetLine = lines.first(where: { $0.anchorId == anchorId }) else {
+                    return
+                }
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    proxy.scrollTo(targetLine.id, anchor: .center)
+                }
+            }
         }
         .background(OrbitTheme.bgDeep.opacity(0.74))
         .overlay(Divider().background(OrbitTheme.border), alignment: .bottom)
@@ -1034,6 +1153,7 @@ struct CodexDiffPanel: View {
 struct CodexDiffRow: View {
     let line: CodexDiffLine
     let isSelectedAnchor: Bool
+    let isLinkedAnchor: Bool
 
     private var sign: String {
         switch line.kind {
@@ -1056,6 +1176,9 @@ struct CodexDiffRow: View {
         if isSelectedAnchor {
             return OrbitTheme.neonCyan.opacity(0.105)
         }
+        if isLinkedAnchor {
+            return OrbitTheme.neonCyan.opacity(0.06)
+        }
 
         switch line.kind {
         case .addition: return OrbitTheme.neonGreen.opacity(0.055)
@@ -1077,8 +1200,8 @@ struct CodexDiffRow: View {
             .tracking(0.8)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(isSelectedAnchor ? OrbitTheme.neonCyan.opacity(0.08) : Color.clear)
-            .overlay(Rectangle().fill(isSelectedAnchor ? OrbitTheme.neonCyan : Color.clear).frame(width: 2), alignment: .leading)
+            .background(isSelectedAnchor ? OrbitTheme.neonCyan.opacity(0.08) : (isLinkedAnchor ? OrbitTheme.neonCyan.opacity(0.045) : Color.clear))
+            .overlay(Rectangle().fill(isSelectedAnchor || isLinkedAnchor ? OrbitTheme.neonCyan : Color.clear).frame(width: isSelectedAnchor ? 2 : 1), alignment: .leading)
             .overlay(Divider().background(OrbitTheme.border), alignment: .bottom)
         } else {
             HStack(spacing: 0) {
@@ -1101,7 +1224,7 @@ struct CodexDiffRow: View {
             }
             .frame(height: 24)
             .background(background)
-            .overlay(Rectangle().fill(isSelectedAnchor ? OrbitTheme.neonCyan : Color.clear).frame(width: 2), alignment: .leading)
+            .overlay(Rectangle().fill(isSelectedAnchor || isLinkedAnchor ? OrbitTheme.neonCyan : Color.clear).frame(width: isSelectedAnchor ? 2 : 1), alignment: .leading)
         }
     }
 }
@@ -1237,7 +1360,7 @@ struct TerminalLine: View {
 struct CodexNarrativePanel: View {
     let model: CodexTutorialDisplayModel
     let selectedStep: Int
-    let selectedAnchorId: String?
+    @Binding var selectedAnchorId: String?
     @Binding var selectedCaseStepId: String?
     let teachingNotes: [OPCodexTeachingNotePayload]
     let reviewFindings: [CodexReviewFinding]
@@ -1259,18 +1382,12 @@ struct CodexNarrativePanel: View {
             return nil
         }
 
-        let relatedSteps = relatedTeachingCaseSteps(in: teachingCase)
-        if let selectedCaseStepId,
-           let selectedStep = relatedSteps.first(where: { $0.stepId == selectedCaseStepId }) {
-            return selectedStep
-        }
-
-        if let selectedAnchorId, !relatedSteps.isEmpty {
-            return bestTeachingCaseStep(for: selectedAnchorId, from: teachingCase)
-        }
-
-        let index = min(max(selectedStep - 1, 0), teachingCase.metadata.steps.count - 1)
-        return teachingCase.metadata.steps[index]
+        return TeachingCaseProjection.activeStep(
+            in: teachingCase,
+            selectedStep: selectedStep,
+            selectedAnchorId: selectedAnchorId,
+            selectedCaseStepId: selectedCaseStepId
+        )
     }
 
     private var activeConceptIds: [String] {
@@ -1278,27 +1395,13 @@ struct CodexNarrativePanel: View {
     }
 
     private func relatedTeachingCaseSteps(in teachingCase: OPTeachingCaseArtifact) -> [OPTeachingCaseStep] {
-        guard let selectedAnchorId else {
-            return []
-        }
-        return teachingCase.metadata.steps.filter { $0.anchorIds.contains(selectedAnchorId) }
+        TeachingCaseProjection.relatedSteps(in: teachingCase, for: selectedAnchorId)
     }
 
-    private func bestTeachingCaseStep(
-        for anchorId: String,
-        from teachingCase: OPTeachingCaseArtifact
-    ) -> OPTeachingCaseStep? {
-        teachingCase.metadata.steps
-            .enumerated()
-            .filter { $0.element.anchorIds.contains(anchorId) }
-            .sorted { lhs, rhs in
-                if lhs.element.anchorIds.count == rhs.element.anchorIds.count {
-                    return lhs.offset < rhs.offset
-                }
-                return lhs.element.anchorIds.count < rhs.element.anchorIds.count
-            }
-            .first?
-            .element
+    private func anchors(for step: OPTeachingCaseStep, in teachingCase: OPTeachingCaseArtifact) -> [OPTeachingCaseAnchor] {
+        step.anchorIds.compactMap { stepAnchorId in
+            teachingCase.metadata.anchors.first(where: { $0.anchorId == stepAnchorId })
+        }
     }
 
     var body: some View {
@@ -1338,6 +1441,17 @@ struct CodexNarrativePanel: View {
             activeConceptIds: activeConceptIds
         )
 
+        if let activeTeachingCaseStep {
+            TeachingCaseAnchorLinkRow(
+                anchors: anchors(for: activeTeachingCaseStep, in: teachingCase),
+                selectedAnchorId: selectedAnchorId,
+                selectAnchor: { anchorId in
+                    selectedAnchorId = anchorId
+                    selectedCaseStepId = activeTeachingCaseStep.stepId
+                }
+            )
+        }
+
         let relatedSteps = relatedTeachingCaseSteps(in: teachingCase)
         if relatedSteps.count > 1 {
             RelatedTeachingStepsPicker(
@@ -1345,6 +1459,9 @@ struct CodexNarrativePanel: View {
                 activeStepId: activeTeachingCaseStep?.stepId,
                 selectStep: { stepId in
                     selectedCaseStepId = stepId
+                    if let step = teachingCase.metadata.steps.first(where: { $0.stepId == stepId }) {
+                        selectedAnchorId = TeachingCaseProjection.leadAnchorId(for: step, currentAnchorId: selectedAnchorId)
+                    }
                 }
             )
         }
@@ -1447,6 +1564,57 @@ struct CodexCallout: View {
         .padding(14)
         .background(color.opacity(0.045))
         .overlay(Rectangle().stroke(color.opacity(0.25), lineWidth: 1))
+    }
+}
+
+struct TeachingCaseAnchorLinkRow: View {
+    let anchors: [OPTeachingCaseAnchor]
+    let selectedAnchorId: String?
+    let selectAnchor: (String) -> Void
+
+    var body: some View {
+        if !anchors.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("LINKED CODE")
+                    .font(OrbitTheme.labelFont())
+                    .tracking(OrbitTheme.labelTracking)
+                    .foregroundStyle(OrbitTheme.textMuted)
+
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], alignment: .leading, spacing: 8) {
+                    ForEach(anchors, id: \.anchorId) { anchor in
+                        Button {
+                            selectAnchor(anchor.anchorId)
+                        } label: {
+                            HStack(spacing: 6) {
+                                SignalGlyph(
+                                    symbol: selectedAnchorId == anchor.anchorId ? "●" : "○",
+                                    color: selectedAnchorId == anchor.anchorId ? OrbitTheme.neonCyan : OrbitTheme.textMuted,
+                                    size: 7
+                                )
+
+                                Text(anchorLabel(anchor))
+                                    .font(OrbitTheme.monoFont(11, weight: selectedAnchorId == anchor.anchorId ? .semibold : .regular))
+                                    .foregroundStyle(selectedAnchorId == anchor.anchorId ? OrbitTheme.textPrimary : OrbitTheme.textSecondary)
+                                    .lineLimit(1)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 7)
+                            .background(selectedAnchorId == anchor.anchorId ? OrbitTheme.neonCyan.opacity(0.07) : OrbitTheme.bgVoid.opacity(0.45))
+                            .overlay(Rectangle().stroke(selectedAnchorId == anchor.anchorId ? OrbitTheme.neonCyan.opacity(0.35) : OrbitTheme.border, lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                        .pointingHandCursor()
+                    }
+                }
+            }
+        }
+    }
+
+    private func anchorLabel(_ anchor: OPTeachingCaseAnchor) -> String {
+        if let symbol = anchor.symbol, !symbol.isEmpty {
+            return "\(symbol):\(anchor.startLine)-\(anchor.endLine)"
+        }
+        return "\(anchor.filePath):\(anchor.startLine)-\(anchor.endLine)"
     }
 }
 

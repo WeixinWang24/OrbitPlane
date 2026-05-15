@@ -285,6 +285,7 @@ public struct OPTeachingCaseMetadata: Codable, Hashable, Sendable {
     public var learnerLevel: String
     public var conceptIds: [String]
     public var evidenceEventIds: [String]
+    public var defaultStepIdByAnchor: [String: String]?
     public var anchors: [OPTeachingCaseAnchor]
     public var steps: [OPTeachingCaseStep]
 
@@ -296,6 +297,7 @@ public struct OPTeachingCaseMetadata: Codable, Hashable, Sendable {
         learnerLevel: String,
         conceptIds: [String],
         evidenceEventIds: [String] = [],
+        defaultStepIdByAnchor: [String: String]? = nil,
         anchors: [OPTeachingCaseAnchor],
         steps: [OPTeachingCaseStep]
     ) {
@@ -306,6 +308,7 @@ public struct OPTeachingCaseMetadata: Codable, Hashable, Sendable {
         self.learnerLevel = learnerLevel
         self.conceptIds = conceptIds
         self.evidenceEventIds = evidenceEventIds
+        self.defaultStepIdByAnchor = defaultStepIdByAnchor
         self.anchors = anchors
         self.steps = steps
     }
@@ -320,6 +323,7 @@ public struct OPTeachingCaseAnchor: Codable, Hashable, Sendable {
     public var symbol: String?
     public var anchorKind: String?
     public var snippetHash: String?
+    public var primaryStepId: String?
 
     public init(
         anchorId: String,
@@ -329,7 +333,8 @@ public struct OPTeachingCaseAnchor: Codable, Hashable, Sendable {
         endLine: Int,
         symbol: String? = nil,
         anchorKind: String? = nil,
-        snippetHash: String? = nil
+        snippetHash: String? = nil,
+        primaryStepId: String? = nil
     ) {
         self.anchorId = anchorId
         self.filePath = filePath
@@ -339,7 +344,14 @@ public struct OPTeachingCaseAnchor: Codable, Hashable, Sendable {
         self.symbol = symbol
         self.anchorKind = anchorKind
         self.snippetHash = snippetHash
+        self.primaryStepId = primaryStepId
     }
+}
+
+public enum OPTeachingCaseProjectionRole: String, Codable, Hashable, Sendable {
+    case primary
+    case supporting
+    case summary
 }
 
 public struct OPTeachingCaseStep: Codable, Hashable, Sendable {
@@ -349,6 +361,8 @@ public struct OPTeachingCaseStep: Codable, Hashable, Sendable {
     public var anchorIds: [String]
     public var conceptIds: [String]
     public var evidenceEventIds: [String]
+    public var projectionRole: OPTeachingCaseProjectionRole?
+    public var priority: Int?
 
     public init(
         stepId: String,
@@ -356,7 +370,9 @@ public struct OPTeachingCaseStep: Codable, Hashable, Sendable {
         body: String,
         anchorIds: [String],
         conceptIds: [String],
-        evidenceEventIds: [String] = []
+        evidenceEventIds: [String] = [],
+        projectionRole: OPTeachingCaseProjectionRole? = nil,
+        priority: Int? = nil
     ) {
         self.stepId = stepId
         self.title = title
@@ -364,6 +380,8 @@ public struct OPTeachingCaseStep: Codable, Hashable, Sendable {
         self.anchorIds = anchorIds
         self.conceptIds = conceptIds
         self.evidenceEventIds = evidenceEventIds
+        self.projectionRole = projectionRole
+        self.priority = priority
     }
 }
 
