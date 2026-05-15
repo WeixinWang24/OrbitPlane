@@ -56,6 +56,7 @@ final class CodexLocalEventSource: ObservableObject {
     private let session: URLSession
     private let archiveDirectoryURL: URL
     private let refreshIntervalNanoseconds: UInt64
+    private let localHTTPServer: CodexLocalHTTPEventServer
     private var subscriptionTask: Task<Void, Never>?
 
     init(
@@ -63,6 +64,7 @@ final class CodexLocalEventSource: ObservableObject {
         httpEndpointURL: URL = URL(string: "http://127.0.0.1:8765/v1/codex/events/latest.jsonl")!,
         session: URLSession = .shared,
         archiveDirectoryURL: URL = OPCodexEventStreamArchive.defaultDirectoryURL,
+        localHTTPServer: CodexLocalHTTPEventServer? = nil,
         refreshIntervalNanoseconds: UInt64 = 2_000_000_000
     ) {
         self.directoryURL = directoryURL
@@ -70,6 +72,7 @@ final class CodexLocalEventSource: ObservableObject {
         self.session = session
         self.archiveDirectoryURL = archiveDirectoryURL
         self.refreshIntervalNanoseconds = refreshIntervalNanoseconds
+        self.localHTTPServer = localHTTPServer ?? CodexLocalHTTPEventServer(directoryURL: directoryURL)
         self.transportStatus = .initial(
             httpEndpointURL: httpEndpointURL,
             directoryURL: directoryURL,
@@ -82,6 +85,12 @@ final class CodexLocalEventSource: ObservableObject {
     }
 
     func start() {
+        do {
+            try localHTTPServer.start()
+        } catch {
+            self.transportStatus.lastHTTPError = "Local HTTP server failed to start: \(error.localizedDescription)"
+        }
+
         reload()
 
         guard subscriptionTask == nil else {
@@ -99,6 +108,7 @@ final class CodexLocalEventSource: ObservableObject {
     func stop() {
         subscriptionTask?.cancel()
         subscriptionTask = nil
+        localHTTPServer.stop()
     }
 
     func reload() {
