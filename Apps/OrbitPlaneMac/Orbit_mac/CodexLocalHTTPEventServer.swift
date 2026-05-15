@@ -135,8 +135,18 @@ final class CodexLocalHTTPEventServer {
                 return
             }
 
+            let flags = fcntl(client, F_GETFL, 0)
+            if flags >= 0 {
+                _ = fcntl(client, F_SETFL, flags & ~O_NONBLOCK)
+            }
+
             var buffer = [UInt8](repeating: 0, count: 64 * 1024)
             let byteCount = read(client, &buffer, buffer.count)
+            if byteCount < 0 {
+                TutorialDebugLog.shared.record("local_http_server.read.failed", fields: [
+                    "error": Self.posixMessage(errno),
+                ])
+            }
             let requestData = byteCount > 0 ? Data(buffer.prefix(byteCount)) : Data()
             let response = self.response(for: requestData)
             response.withUnsafeBytes { rawBuffer in
