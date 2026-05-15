@@ -32,6 +32,9 @@ struct CodexTutorialView: View {
 
     private var highlightedAnchorIds: Set<String> {
         if let activeTeachingCaseStep {
+            if activeTeachingCaseStep.projectionRole == .summary {
+                return selectedAnchorId.map { [$0] } ?? []
+            }
             return Set(activeTeachingCaseStep.anchorIds)
         }
         if let selectedAnchorId {
@@ -1119,12 +1122,6 @@ struct CodexDiffPanel: View {
                         )
                         .id(line.id)
                         .contentShape(Rectangle())
-                        .onHover { isHovered in
-                            if isHovered, let anchorId = line.anchorId {
-                                selectedAnchorId = anchorId
-                                selectedCaseStepId = nil
-                            }
-                        }
                         .onTapGesture {
                             if let anchorId = line.anchorId {
                                 selectedAnchorId = anchorId
