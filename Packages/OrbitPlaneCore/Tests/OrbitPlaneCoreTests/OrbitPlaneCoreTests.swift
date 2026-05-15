@@ -219,6 +219,39 @@ import Testing
     #expect(snapshot.projection.teachingNotes.first?.title == "From emitter to MCP")
 }
 
+@Test func codexStreamSnapshotLoadsJSONLFromHTTPData() throws {
+    let producer = OPCodexProducer(kind: .mcp, name: "orbitplane-http-teacher", version: "0.1.0")
+    let session = OPCodexSessionRef(sessionId: "http_teaching_case", workspaceId: "OrbitPlane")
+    let events = try [
+        makeEvent(
+            id: "evt_http_001",
+            sequence: 1,
+            producer: producer,
+            session: session,
+            type: .teachingNoteCreated,
+            payload: OPCodexTeachingNotePayload(
+                noteId: "note_http_001",
+                title: "HTTP event stream",
+                body: "Load localhost JSONL without relying on filesystem polling.",
+                tone: .explanation
+            )
+        ),
+    ]
+
+    let encoder = JSONEncoder()
+    let jsonl = try events
+        .map { try String(data: encoder.encode($0), encoding: .utf8).unwrap() }
+        .joined(separator: "\n")
+    let sourceURL = URL(string: "http://127.0.0.1:8765/v1/codex/events/latest.jsonl")!
+    let snapshot = try OPCodexEventFileCache.loadStream(from: Data(jsonl.utf8), sourceURL: sourceURL)
+
+    #expect(snapshot.sessionId == "http_teaching_case")
+    #expect(snapshot.fileName == "latest.jsonl")
+    #expect(snapshot.eventCount == 1)
+    #expect(snapshot.flags.hasTeachingNote)
+    #expect(snapshot.projection.teachingNotes.first?.title == "HTTP event stream")
+}
+
 @Test func teachingCaseArtifactLinkProjectsAndLoadsHTMLMetadata() throws {
     let eventURL = repoRoot()
         .appendingPathComponent("CodexIntegration/fixtures/teaching_cases/python_variables_beginner.artifact_link_event.json")

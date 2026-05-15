@@ -143,15 +143,34 @@ public enum OPCodexEventFileCache {
     public static func loadStream(from fileURL: URL) throws -> OPCodexEventStreamSnapshot {
         let resourceValues = try fileURL.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey])
         let text = try String(contentsOf: fileURL, encoding: .utf8)
+        return try loadStream(
+            from: Data(text.utf8),
+            sourceURL: fileURL,
+            modifiedAt: resourceValues.contentModificationDate,
+            byteCount: resourceValues.fileSize ?? text.utf8.count
+        )
+    }
+
+    public static func loadStream(
+        from data: Data,
+        sourceURL: URL,
+        modifiedAt: Date? = nil,
+        byteCount: Int? = nil
+    ) throws -> OPCodexEventStreamSnapshot {
+        guard let text = String(data: data, encoding: .utf8) else {
+            throw DecodingError.dataCorrupted(
+                .init(codingPath: [], debugDescription: "JSONL stream is not UTF-8")
+            )
+        }
         let events = try OPCodexEventDecoder.decodeJSONLines(text)
         var store = OPCodexEventStore()
         let report = try store.ingest(events)
         let projection = OPCodexProjector.project(store)
 
         return OPCodexEventStreamSnapshot(
-            fileURL: fileURL,
-            modifiedAt: resourceValues.contentModificationDate,
-            byteCount: resourceValues.fileSize ?? text.utf8.count,
+            fileURL: sourceURL,
+            modifiedAt: modifiedAt,
+            byteCount: byteCount ?? data.count,
             store: store,
             projection: projection,
             flags: OPCodexEventFlagSet(events: projection.events),

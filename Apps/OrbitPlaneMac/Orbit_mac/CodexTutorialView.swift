@@ -93,11 +93,14 @@ struct CodexTutorialView: View {
         }
         .background(OrbitTheme.bgDeep.opacity(0.72))
         .onAppear {
-            eventSource.reload()
+            eventSource.start()
             selectedStep = model.activeStepId
             selectedFile = model.filePath
             selectedAnchorId = model.defaultAnchorId
             selectedCaseStepId = nil
+        }
+        .onDisappear {
+            eventSource.stop()
         }
         .onChange(of: model.sessionId) { _, _ in
             selectedStep = model.activeStepId
@@ -740,8 +743,10 @@ struct CodexTopBar: View {
         switch loadState {
         case .idle:
             return ("IDLE", OrbitTheme.textMuted)
-        case .loaded:
-            return ("LIVE JSONL", OrbitTheme.neonGreen)
+        case .loaded(.localhostHTTP):
+            return ("HTTP JSONL", OrbitTheme.neonGreen)
+        case .loaded(.fileCache):
+            return ("FILE JSONL", OrbitTheme.neonCyan)
         case .failed:
             return ("DUMMY", OrbitTheme.neonPink)
         }
