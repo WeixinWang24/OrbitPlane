@@ -1,76 +1,157 @@
 import Foundation
-import Network
+import Darwin
 import OrbitPlaneCore
 
 final class CodexLocalHTTPEventServer {
     private let directoryURL: URL
-    private let host: NWEndpoint.Host
-    private let port: NWEndpoint.Port
+    private let port: UInt16
     private let queue = DispatchQueue(label: "orbitplane.codex.local-http-event-server")
-    private var listener: NWListener?
+    private var acceptSource: DispatchSourceRead?
+    private var listenFileDescriptor: CInt = -1
 
     init(
         directoryURL: URL = OPCodexEventFileCache.defaultDirectoryURL,
-        host: NWEndpoint.Host = .ipv4(IPv4Address("127.0.0.1")!),
         port: UInt16 = 8765
     ) {
         self.directoryURL = directoryURL
-        self.host = host
-        self.port = NWEndpoint.Port(rawValue: port)!
+        self.port = port
     }
 
     func start() throws {
-        guard listener == nil else {
+        guard acceptSource == nil else {
             TutorialDebugLog.shared.record("local_http_server.start.skipped", fields: [
                 "reason": "already_started",
-                "endpoint": "127.0.0.1:\(port.rawValue)",
+                "endpoint": "127.0.0.1:\(port)",
             ])
             return
         }
 
-        let parameters = NWParameters.tcp
-        parameters.allowLocalEndpointReuse = true
-        parameters.requiredLocalEndpoint = .hostPort(host: host, port: port)
+        let endpoint = "127.0.0.1:\(port)"
+        let fileDescriptor = socket(AF_INET, SOCK_STREAM, 0)
+        guard fileDescriptor >= 0 else {
+            throw Self.posixError(operation: "socket")
+        }
 
-        let endpoint = "127.0.0.1:\(port.rawValue)"
-        let listener = try NWListener(using: parameters, on: port)
-        listener.newConnectionHandler = { [weak self] connection in
-            self?.handle(connection)
+        do {
+            try configureLoopbackListener(fileDescriptor)
+        } catch {
+            close(fileDescriptor)
+            throw error
         }
-        listener.stateUpdateHandler = { state in
-            TutorialDebugLog.shared.record("local_http_server.state", fields: [
-                "state": String(describing: state),
-                "endpoint": endpoint,
-            ])
+
+        let source = DispatchSource.makeReadSource(fileDescriptor: fileDescriptor, queue: queue)
+        source.setEventHandler { [weak self] in
+            self?.acceptAvailableConnections()
         }
-        listener.start(queue: queue)
-        self.listener = listener
+        source.setCancelHandler {
+            close(fileDescriptor)
+        }
+
+        self.listenFileDescriptor = fileDescriptor
+        self.acceptSource = source
+        source.resume()
         TutorialDebugLog.shared.record("local_http_server.start.requested", fields: [
             "endpoint": endpoint,
             "event_dir": directoryURL.path,
+            "bind_host": "127.0.0.1",
         ])
     }
 
     func stop() {
         TutorialDebugLog.shared.record("local_http_server.stop", fields: [
-            "endpoint": "127.0.0.1:\(port.rawValue)",
+            "endpoint": "127.0.0.1:\(port)",
         ])
-        listener?.cancel()
-        listener = nil
+        acceptSource?.cancel()
+        acceptSource = nil
+        listenFileDescriptor = -1
     }
 
-    private func handle(_ connection: NWConnection) {
-        connection.start(queue: queue)
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 64 * 1024) { [weak self] data, _, _, _ in
-            guard let self else {
-                connection.cancel()
+    private func configureLoopbackListener(_ fileDescriptor: CInt) throws {
+        var reuseAddress: CInt = 1
+        guard setsockopt(
+            fileDescriptor,
+            SOL_SOCKET,
+            SO_REUSEADDR,
+            &reuseAddress,
+            socklen_t(MemoryLayout<CInt>.size)
+        ) == 0 else {
+            throw Self.posixError(operation: "setsockopt")
+        }
+
+        let flags = fcntl(fileDescriptor, F_GETFL, 0)
+        guard flags >= 0, fcntl(fileDescriptor, F_SETFL, flags | O_NONBLOCK) == 0 else {
+            throw Self.posixError(operation: "fcntl")
+        }
+
+        var address = sockaddr_in()
+        address.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+        address.sin_family = sa_family_t(AF_INET)
+        address.sin_port = port.bigEndian
+        guard inet_pton(AF_INET, "127.0.0.1", &address.sin_addr) == 1 else {
+            throw Self.posixError(operation: "inet_pton")
+        }
+
+        let bindResult = withUnsafePointer(to: &address) { pointer in
+            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { socketAddress in
+                bind(fileDescriptor, socketAddress, socklen_t(MemoryLayout<sockaddr_in>.size))
+            }
+        }
+        guard bindResult == 0 else {
+            throw Self.posixError(operation: "bind")
+        }
+
+        guard listen(fileDescriptor, SOMAXCONN) == 0 else {
+            throw Self.posixError(operation: "listen")
+        }
+    }
+
+    private func acceptAvailableConnections() {
+        while true {
+            var address = sockaddr_storage()
+            var addressLength = socklen_t(MemoryLayout<sockaddr_storage>.size)
+            let client = withUnsafeMutablePointer(to: &address) { pointer in
+                pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { socketAddress in
+                    accept(listenFileDescriptor, socketAddress, &addressLength)
+                }
+            }
+
+            guard client >= 0 else {
+                if errno != EWOULDBLOCK && errno != EAGAIN {
+                    TutorialDebugLog.shared.record("local_http_server.accept.failed", fields: [
+                        "error": Self.posixMessage(errno),
+                    ])
+                }
                 return
             }
 
-            let response = self.response(for: data ?? Data())
-            connection.send(content: response, completion: .contentProcessed { _ in
-                connection.cancel()
-            })
+            handle(client)
+        }
+    }
+
+    private func handle(_ client: CInt) {
+        queue.async { [weak self] in
+            defer { close(client) }
+            guard let self else {
+                return
+            }
+
+            var buffer = [UInt8](repeating: 0, count: 64 * 1024)
+            let byteCount = read(client, &buffer, buffer.count)
+            let requestData = byteCount > 0 ? Data(buffer.prefix(byteCount)) : Data()
+            let response = self.response(for: requestData)
+            response.withUnsafeBytes { rawBuffer in
+                guard let baseAddress = rawBuffer.baseAddress else {
+                    return
+                }
+                var sent = 0
+                while sent < response.count {
+                    let written = write(client, baseAddress.advanced(by: sent), response.count - sent)
+                    guard written > 0 else {
+                        return
+                    }
+                    sent += written
+                }
+            }
         }
     }
 
@@ -146,5 +227,25 @@ final class CodexLocalHTTPEventServer {
         """.utf8))
         response.append(body)
         return response
+    }
+
+    private static func posixError(operation: String) -> Error {
+        let code = errno
+        return LocalHTTPServerError.posix(operation: operation, code: code, message: posixMessage(code))
+    }
+
+    private static func posixMessage(_ code: Int32) -> String {
+        String(cString: strerror(code))
+    }
+}
+
+private enum LocalHTTPServerError: LocalizedError {
+    case posix(operation: String, code: Int32, message: String)
+
+    var errorDescription: String? {
+        switch self {
+        case let .posix(operation, code, message):
+            return "\(operation) failed with errno \(code): \(message)"
+        }
     }
 }
