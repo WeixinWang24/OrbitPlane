@@ -149,7 +149,7 @@ private struct SettingsPreview: View {
             SettingsSectionLabel(title: "PREVIEW")
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("CODEX // TEACHING NOTE")
+                Text("TUTORIAL // TEACHING NOTE")
                     .font(OrbitTheme.labelFont(10, weight: .semibold))
                     .tracking(OrbitTheme.labelTracking)
                     .foregroundStyle(OrbitTheme.neonCyan)

@@ -119,7 +119,7 @@ final class CodexLocalEventSource: ObservableObject {
 
     private func refreshOnce() async {
         do {
-            let snapshot = try await loadHTTPSnapshot()
+            let snapshot = try await loadHTTPSnapshotWithRetry()
             self.transportStatus.isFilesystemFallbackActive = false
             self.transportStatus.lastHTTPError = nil
             self.transportStatus.lastRefreshAt = Date()
@@ -127,6 +127,21 @@ final class CodexLocalEventSource: ObservableObject {
         } catch {
             loadFilesystemFallback(httpError: error)
         }
+    }
+
+    private func loadHTTPSnapshotWithRetry() async throws -> OPCodexEventStreamSnapshot {
+        var lastError: Error?
+        for attempt in 0..<4 {
+            do {
+                return try await loadHTTPSnapshot()
+            } catch {
+                lastError = error
+                if attempt < 3 {
+                    try? await Task.sleep(nanoseconds: 120_000_000)
+                }
+            }
+        }
+        throw lastError ?? URLError(.cannotConnectToHost)
     }
 
     private func loadHTTPSnapshot() async throws -> OPCodexEventStreamSnapshot {

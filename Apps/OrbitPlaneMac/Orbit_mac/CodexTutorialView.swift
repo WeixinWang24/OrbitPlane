@@ -278,7 +278,7 @@ struct CodexTutorialDisplayModel {
         if let teachingCase = teachingCases.last {
             return teachingCase.metadata.title
         }
-        return teachingNotes.first?.title ?? (isLiveStream ? sessionId : "Waiting for Codex teaching events")
+        return teachingNotes.first?.title ?? (isLiveStream ? sessionId : "Waiting for tutorial events")
     }
 
     var tutorialSubtitle: String {
@@ -769,7 +769,7 @@ struct CodexTopBar: View {
                 .font(OrbitTheme.monoFont(12, weight: .medium))
                 .foregroundStyle(OrbitTheme.textMuted)
 
-            Text("CODEX // TUTORIALS")
+            Text("TUTORIALS")
                 .font(OrbitTheme.labelFont(11, weight: .medium))
                 .tracking(1.9)
                 .foregroundStyle(OrbitTheme.textMuted)
@@ -819,7 +819,7 @@ struct CodexTopBar: View {
                     .overlay(Rectangle().stroke(OrbitTheme.borderStrong, lineWidth: 1))
             }
             .buttonStyle(.plain)
-            .help("Reload local Codex event cache")
+            .help("Reload local tutorial event stream")
             .pointingHandCursor()
         }
         .padding(.horizontal, 18)
@@ -1609,7 +1609,7 @@ struct CodexNarrativePanel: View {
                 .foregroundStyle(OrbitTheme.textPrimary)
                 .lineLimit(3)
 
-            Text(activeNote?.body ?? activeStepPayload?.summary ?? "No teaching note has arrived yet. OrbitPlane is watching the local Codex event cache for MCP-generated tutorial events.")
+            Text(activeNote?.body ?? activeStepPayload?.summary ?? "No teaching note has arrived yet. OrbitPlane is watching the local tutorial event stream for MCP-generated tutorial events.")
                 .font(.system(size: 14))
                 .lineSpacing(4)
                 .foregroundStyle(OrbitTheme.textSecondary)

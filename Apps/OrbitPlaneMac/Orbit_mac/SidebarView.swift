@@ -5,7 +5,7 @@ enum NavigationPage: String, CaseIterable {
     case chat = "Runs"
     case agents = "Agents"
     case workflows = "Missions"
-    case codex = "Codex"
+    case codex = "Tutorials"
     case console = "Console"
     case settings = "Settings"
 
@@ -15,7 +15,7 @@ enum NavigationPage: String, CaseIterable {
         case .chat: return "bubble.left.and.bubble.right"
         case .agents: return "cpu"
         case .workflows: return "arrow.triangle.branch"
-        case .codex: return "chevron.left.forwardslash.chevron.right"
+        case .codex: return "book.pages"
         case .console: return "terminal"
         case .settings: return "gearshape"
         }
