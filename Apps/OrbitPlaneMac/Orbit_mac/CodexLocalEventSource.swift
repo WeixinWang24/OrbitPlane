@@ -23,6 +23,7 @@ final class CodexLocalEventSource: ObservableObject {
     let httpEndpointURL: URL
 
     private let session: URLSession
+    private let archiveDirectoryURL: URL
     private let refreshIntervalNanoseconds: UInt64
     private var subscriptionTask: Task<Void, Never>?
 
@@ -30,11 +31,13 @@ final class CodexLocalEventSource: ObservableObject {
         directoryURL: URL = OPCodexEventFileCache.defaultDirectoryURL,
         httpEndpointURL: URL = URL(string: "http://127.0.0.1:8765/v1/codex/events/latest.jsonl")!,
         session: URLSession = .shared,
+        archiveDirectoryURL: URL = OPCodexEventStreamArchive.defaultDirectoryURL,
         refreshIntervalNanoseconds: UInt64 = 2_000_000_000
     ) {
         self.directoryURL = directoryURL
         self.httpEndpointURL = httpEndpointURL
         self.session = session
+        self.archiveDirectoryURL = archiveDirectoryURL
         self.refreshIntervalNanoseconds = refreshIntervalNanoseconds
     }
 
@@ -93,11 +96,17 @@ final class CodexLocalEventSource: ObservableObject {
             throw URLError(.badServerResponse)
         }
 
-        return try OPCodexEventFileCache.loadStream(
+        let snapshot = try OPCodexEventFileCache.loadStream(
             from: data,
             sourceURL: httpEndpointURL,
             byteCount: data.count
         )
+        _ = try OPCodexEventStreamArchive.persistSnapshot(
+            data: data,
+            snapshot: snapshot,
+            directoryURL: archiveDirectoryURL
+        )
+        return snapshot
     }
 
     private func loadFilesystemFallback(httpError: Error) {

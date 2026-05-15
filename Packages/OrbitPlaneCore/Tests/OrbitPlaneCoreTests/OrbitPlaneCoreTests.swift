@@ -252,6 +252,56 @@ import Testing
     #expect(snapshot.projection.teachingNotes.first?.title == "HTTP event stream")
 }
 
+@Test func codexEventStreamArchivePersistsHTTPSnapshotsForReplay() throws {
+    let directoryURL = FileManager.default.temporaryDirectory
+        .appendingPathComponent("orbitplane-archive-tests-\(UUID().uuidString)", isDirectory: true)
+    defer { try? FileManager.default.removeItem(at: directoryURL) }
+
+    let producer = OPCodexProducer(kind: .mcp, name: "orbitplane-http-teacher", version: "0.1.0")
+    let session = OPCodexSessionRef(sessionId: "http teaching/case", workspaceId: "OrbitPlane")
+    let event = try makeEvent(
+        id: "evt_archive_001",
+        sequence: 1,
+        producer: producer,
+        session: session,
+        type: .teachingNoteCreated,
+        payload: OPCodexTeachingNotePayload(
+            noteId: "note_archive_001",
+            title: "Persist replayable stream",
+            body: "Archive localhost JSONL snapshots so tutorials can be revisited later.",
+            tone: .explanation
+        )
+    )
+
+    let data = try JSONEncoder().encode(event)
+    let sourceURL = URL(string: "http://127.0.0.1:8765/v1/codex/events/latest.jsonl")!
+    let snapshot = try OPCodexEventFileCache.loadStream(from: data, sourceURL: sourceURL)
+    let result = try OPCodexEventStreamArchive.persistSnapshot(
+        data: data,
+        snapshot: snapshot,
+        directoryURL: directoryURL,
+        now: Date(timeIntervalSince1970: 1_800_000_000)
+    )
+
+    #expect(result.didArchiveNewSnapshot)
+    #expect(result.sessionDirectoryURL.lastPathComponent == "http_teaching_case")
+    #expect(FileManager.default.fileExists(atPath: result.latestURL.path))
+    #expect(result.archivedURL?.pathExtension == "jsonl")
+
+    let replaySnapshot = try OPCodexEventFileCache.loadStream(from: result.latestURL)
+    #expect(replaySnapshot.sessionId == "http teaching/case")
+    #expect(replaySnapshot.projection.teachingNotes.first?.title == "Persist replayable stream")
+
+    let duplicateResult = try OPCodexEventStreamArchive.persistSnapshot(
+        data: data,
+        snapshot: snapshot,
+        directoryURL: directoryURL,
+        now: Date(timeIntervalSince1970: 1_800_000_001)
+    )
+    #expect(!duplicateResult.didArchiveNewSnapshot)
+    #expect(duplicateResult.archivedURL == nil)
+}
+
 @Test func teachingCaseArtifactLinkProjectsAndLoadsHTMLMetadata() throws {
     let eventURL = repoRoot()
         .appendingPathComponent("CodexIntegration/fixtures/teaching_cases/python_variables_beginner.artifact_link_event.json")
