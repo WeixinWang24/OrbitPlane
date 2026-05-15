@@ -89,7 +89,11 @@ struct CodexTutorialView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            CodexBottomBar(model: model)
+            CodexBottomBar(
+                model: model,
+                loadState: eventSource.loadState,
+                transportStatus: eventSource.transportStatus
+            )
         }
         .background(OrbitTheme.bgDeep.opacity(0.72))
         .onAppear {
@@ -842,37 +846,148 @@ struct CodexEventFlagBadge: View {
 
 struct CodexBottomBar: View {
     let model: CodexTutorialDisplayModel
+    let loadState: CodexLocalEventSource.LoadState
+    let transportStatus: CodexLocalEventSource.TransportStatus
+
+    private var transportLabel: String {
+        switch loadState {
+        case .idle:
+            return "IDLE"
+        case .loaded(.localhostHTTP):
+            return "HTTP"
+        case .loaded(.fileCache):
+            return "FILESYSTEM FALLBACK"
+        case .failed:
+            return "OFFLINE"
+        }
+    }
+
+    private var transportColor: Color {
+        switch loadState {
+        case .idle:
+            return OrbitTheme.textMuted
+        case .loaded(.localhostHTTP):
+            return OrbitTheme.neonGreen
+        case .loaded(.fileCache):
+            return OrbitTheme.neonCyan
+        case .failed:
+            return OrbitTheme.neonPink
+        }
+    }
+
+    private var archiveLabel: String {
+        if let snapshotPath = transportStatus.lastArchiveSnapshotPath {
+            return transportStatus.didArchiveNewSnapshot ? "ARCHIVED \(lastPath(snapshotPath))" : "ARCHIVE STABLE"
+        }
+        if transportStatus.lastArchiveLatestPath != nil {
+            return "ARCHIVE STABLE"
+        }
+        return "NO HTTP ARCHIVE"
+    }
+
+    private var archivePath: String {
+        transportStatus.lastArchiveLatestPath ?? transportStatus.archiveRootPath
+    }
+
+    private var refreshLabel: String {
+        guard let lastRefreshAt = transportStatus.lastRefreshAt else {
+            return "WAITING"
+        }
+        return lastRefreshAt.formatted(date: .omitted, time: .standard)
+    }
 
     var body: some View {
-        HStack(spacing: 14) {
-            Text("● BRANCH: \(model.branch)")
-            Text("/")
-                .foregroundStyle(OrbitTheme.textMuted)
-            HStack(spacing: 4) {
-                Text("+\(model.additions)")
-                    .foregroundStyle(OrbitTheme.neonGreen)
-                Text("-\(model.deletions)")
-                    .foregroundStyle(OrbitTheme.neonPink)
+        VStack(spacing: 0) {
+            HStack(spacing: 14) {
+                Text("● BRANCH: \(model.branch)")
+                Text("/")
+                    .foregroundStyle(OrbitTheme.textMuted)
+                HStack(spacing: 4) {
+                    Text("+\(model.additions)")
+                        .foregroundStyle(OrbitTheme.neonGreen)
+                    Text("-\(model.deletions)")
+                        .foregroundStyle(OrbitTheme.neonPink)
+                }
+                Text("/")
+                    .foregroundStyle(OrbitTheme.textMuted)
+
+                TransportStatusBadge(label: transportLabel, color: transportColor)
+                TransportStatusBadge(
+                    label: transportStatus.isFilesystemFallbackActive ? "FALLBACK ON" : "FALLBACK OFF",
+                    color: transportStatus.isFilesystemFallbackActive ? OrbitTheme.neonCyan : OrbitTheme.textMuted
+                )
+                TransportStatusBadge(
+                    label: archiveLabel,
+                    color: transportStatus.lastArchiveLatestPath == nil ? OrbitTheme.textMuted : OrbitTheme.neonGreen
+                )
+
+                Text("REFRESH \(refreshLabel)")
+                    .foregroundStyle(OrbitTheme.textMuted)
+
+                Spacer()
+
+                Text("\(model.eventCount) EVENTS")
+                    .foregroundStyle(OrbitTheme.textMuted)
             }
-            Text("/")
-                .foregroundStyle(OrbitTheme.textMuted)
-            Text("SOURCE")
-            Text(model.sourceName)
-                .lineLimit(1)
-                .foregroundStyle(model.isLiveStream ? OrbitTheme.neonGreen : OrbitTheme.textMuted)
+            .frame(height: 28)
 
-            Spacer()
+            HStack(spacing: 10) {
+                TransportPathLabel(label: "HTTP", value: transportStatus.httpEndpoint, color: OrbitTheme.neonGreen)
+                TransportPathLabel(label: "FILE", value: transportStatus.filesystemFallbackPath, color: OrbitTheme.neonCyan)
+                TransportPathLabel(label: "REPLAY", value: archivePath, color: OrbitTheme.neonPurple)
 
-            Text(model.sourcePath)
-                .lineLimit(1)
+                if let lastHTTPError = transportStatus.lastHTTPError, transportStatus.isFilesystemFallbackActive {
+                    TransportPathLabel(label: "HTTP ERROR", value: lastHTTPError, color: OrbitTheme.neonPink)
+                }
+            }
+            .frame(height: 24)
         }
         .font(OrbitTheme.labelFont(10, weight: .medium))
         .tracking(1.2)
         .foregroundStyle(OrbitTheme.textMuted)
         .padding(.horizontal, 16)
-        .frame(height: 28)
+        .frame(height: 52)
         .background(OrbitTheme.bgSurface)
         .overlay(Divider().background(OrbitTheme.border), alignment: .top)
+    }
+
+    private func lastPath(_ path: String) -> String {
+        URL(fileURLWithPath: path).lastPathComponent
+    }
+}
+
+struct TransportStatusBadge: View {
+    let label: String
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 5) {
+            SignalGlyph(symbol: "●", color: color, size: 6)
+            Text(label)
+                .foregroundStyle(color)
+        }
+        .padding(.horizontal, 7)
+        .frame(height: 18)
+        .background(color.opacity(0.045))
+        .overlay(Rectangle().stroke(color.opacity(0.22), lineWidth: 1))
+    }
+}
+
+struct TransportPathLabel: View {
+    let label: String
+    let value: String
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Text(label)
+                .foregroundStyle(color)
+            Text(value)
+                .font(OrbitTheme.monoFont(9, weight: .medium))
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .foregroundStyle(OrbitTheme.textMuted)
+        }
     }
 }
 

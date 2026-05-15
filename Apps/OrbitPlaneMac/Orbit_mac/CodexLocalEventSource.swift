@@ -15,9 +15,40 @@ final class CodexLocalEventSource: ObservableObject {
         case fileCache = "LIVE JSONL"
     }
 
+    struct TransportStatus: Equatable {
+        var httpEndpoint: String
+        var filesystemFallbackPath: String
+        var archiveRootPath: String
+        var isFilesystemFallbackActive: Bool
+        var lastHTTPError: String?
+        var lastArchiveLatestPath: String?
+        var lastArchiveSnapshotPath: String?
+        var didArchiveNewSnapshot: Bool
+        var lastRefreshAt: Date?
+
+        static func initial(
+            httpEndpointURL: URL,
+            directoryURL: URL,
+            archiveDirectoryURL: URL
+        ) -> TransportStatus {
+            TransportStatus(
+                httpEndpoint: httpEndpointURL.absoluteString,
+                filesystemFallbackPath: directoryURL.path,
+                archiveRootPath: archiveDirectoryURL.path,
+                isFilesystemFallbackActive: false,
+                lastHTTPError: nil,
+                lastArchiveLatestPath: nil,
+                lastArchiveSnapshotPath: nil,
+                didArchiveNewSnapshot: false,
+                lastRefreshAt: nil
+            )
+        }
+    }
+
     @Published private(set) var model = CodexTutorialDisplayModel.dummy
     @Published private(set) var snapshot: OPCodexEventStreamSnapshot?
     @Published private(set) var loadState: LoadState = .idle
+    @Published private(set) var transportStatus: TransportStatus
 
     let directoryURL: URL
     let httpEndpointURL: URL
@@ -39,6 +70,11 @@ final class CodexLocalEventSource: ObservableObject {
         self.session = session
         self.archiveDirectoryURL = archiveDirectoryURL
         self.refreshIntervalNanoseconds = refreshIntervalNanoseconds
+        self.transportStatus = .initial(
+            httpEndpointURL: httpEndpointURL,
+            directoryURL: directoryURL,
+            archiveDirectoryURL: archiveDirectoryURL
+        )
     }
 
     deinit {
@@ -74,6 +110,9 @@ final class CodexLocalEventSource: ObservableObject {
     private func refreshOnce() async {
         do {
             let snapshot = try await loadHTTPSnapshot()
+            self.transportStatus.isFilesystemFallbackActive = false
+            self.transportStatus.lastHTTPError = nil
+            self.transportStatus.lastRefreshAt = Date()
             apply(snapshot, sourceKind: .localhostHTTP)
         } catch {
             loadFilesystemFallback(httpError: error)
@@ -101,21 +140,30 @@ final class CodexLocalEventSource: ObservableObject {
             sourceURL: httpEndpointURL,
             byteCount: data.count
         )
-        _ = try OPCodexEventStreamArchive.persistSnapshot(
+        let archiveResult = try OPCodexEventStreamArchive.persistSnapshot(
             data: data,
             snapshot: snapshot,
             directoryURL: archiveDirectoryURL
         )
+        self.transportStatus.lastArchiveLatestPath = archiveResult.latestURL.path
+        self.transportStatus.lastArchiveSnapshotPath = archiveResult.archivedURL?.path
+        self.transportStatus.didArchiveNewSnapshot = archiveResult.didArchiveNewSnapshot
         return snapshot
     }
 
     private func loadFilesystemFallback(httpError: Error) {
         do {
             let snapshot = try OPCodexEventFileCache.loadLatestStream(from: directoryURL)
+            self.transportStatus.isFilesystemFallbackActive = true
+            self.transportStatus.lastHTTPError = httpError.localizedDescription
+            self.transportStatus.lastRefreshAt = Date()
             apply(snapshot, sourceKind: .fileCache)
         } catch {
             self.snapshot = nil
             self.model = .dummy
+            self.transportStatus.isFilesystemFallbackActive = true
+            self.transportStatus.lastHTTPError = httpError.localizedDescription
+            self.transportStatus.lastRefreshAt = Date()
             self.loadState = .failed("HTTP: \(httpError.localizedDescription); file cache: \(error.localizedDescription)")
         }
     }

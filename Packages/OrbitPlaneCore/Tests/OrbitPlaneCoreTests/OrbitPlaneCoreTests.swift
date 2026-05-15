@@ -292,6 +292,19 @@ import Testing
     #expect(replaySnapshot.sessionId == "http teaching/case")
     #expect(replaySnapshot.projection.teachingNotes.first?.title == "Persist replayable stream")
 
+    let archiveReplaySnapshot = try OPCodexEventStreamArchive.loadLatestSnapshot(
+        sessionId: "http teaching/case",
+        directoryURL: directoryURL
+    )
+    #expect(archiveReplaySnapshot.eventCount == 1)
+
+    let archiveEntries = try OPCodexEventStreamArchive.listSnapshots(
+        sessionId: "http teaching/case",
+        directoryURL: directoryURL
+    )
+    #expect(archiveEntries.count == 2)
+    #expect(archiveEntries.first?.isLatest == true)
+
     let duplicateResult = try OPCodexEventStreamArchive.persistSnapshot(
         data: data,
         snapshot: snapshot,

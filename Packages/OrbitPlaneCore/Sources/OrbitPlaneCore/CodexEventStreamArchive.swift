@@ -19,6 +19,20 @@ public struct OPCodexEventStreamArchiveResult: Equatable, Sendable {
     }
 }
 
+public struct OPCodexEventStreamArchiveEntry: Equatable, Sendable {
+    public var fileURL: URL
+    public var modifiedAt: Date?
+    public var byteCount: Int
+    public var isLatest: Bool
+
+    public init(fileURL: URL, modifiedAt: Date?, byteCount: Int, isLatest: Bool) {
+        self.fileURL = fileURL
+        self.modifiedAt = modifiedAt
+        self.byteCount = byteCount
+        self.isLatest = isLatest
+    }
+}
+
 public enum OPCodexEventStreamArchive {
     public static let defaultDirectoryURL = URL(
         fileURLWithPath: "/Volumes/2TB/Dev/OrbitPlane/.orbitplane/codex-event-history",
@@ -60,6 +74,56 @@ public enum OPCodexEventStreamArchive {
             archivedURL: archivedURL,
             didArchiveNewSnapshot: true
         )
+    }
+
+    public static func loadLatestSnapshot(
+        sessionId: String,
+        directoryURL: URL = defaultDirectoryURL
+    ) throws -> OPCodexEventStreamSnapshot {
+        let latestURL = directoryURL
+            .appendingPathComponent(safePathComponent(sessionId), isDirectory: true)
+            .appendingPathComponent("latest.jsonl")
+        return try OPCodexEventFileCache.loadStream(from: latestURL)
+    }
+
+    public static func listSnapshots(
+        sessionId: String,
+        directoryURL: URL = defaultDirectoryURL
+    ) throws -> [OPCodexEventStreamArchiveEntry] {
+        let sessionDirectoryURL = directoryURL
+            .appendingPathComponent(safePathComponent(sessionId), isDirectory: true)
+        let fileURLs = try FileManager.default.contentsOfDirectory(
+            at: sessionDirectoryURL,
+            includingPropertiesForKeys: [.contentModificationDateKey, .fileSizeKey],
+            options: [.skipsHiddenFiles]
+        )
+        .filter { $0.pathExtension.lowercased() == "jsonl" }
+
+        return try fileURLs
+            .map { fileURL in
+                let values = try fileURL.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey])
+                return OPCodexEventStreamArchiveEntry(
+                    fileURL: fileURL,
+                    modifiedAt: values.contentModificationDate,
+                    byteCount: values.fileSize ?? 0,
+                    isLatest: fileURL.lastPathComponent == "latest.jsonl"
+                )
+            }
+            .sorted { lhs, rhs in
+                if lhs.isLatest != rhs.isLatest {
+                    return lhs.isLatest
+                }
+                switch (lhs.modifiedAt, rhs.modifiedAt) {
+                case let (lhsDate?, rhsDate?):
+                    return lhsDate > rhsDate
+                case (_?, nil):
+                    return true
+                case (nil, _?):
+                    return false
+                case (nil, nil):
+                    return lhs.fileURL.lastPathComponent < rhs.fileURL.lastPathComponent
+                }
+            }
     }
 
     private static func nextArchiveURL(
