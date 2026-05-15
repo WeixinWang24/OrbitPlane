@@ -21,6 +21,10 @@ final class CodexLocalHTTPEventServer {
 
     func start() throws {
         guard listener == nil else {
+            TutorialDebugLog.shared.record("local_http_server.start.skipped", fields: [
+                "reason": "already_started",
+                "endpoint": "127.0.0.1:\(port.rawValue)",
+            ])
             return
         }
 
@@ -28,15 +32,29 @@ final class CodexLocalHTTPEventServer {
         parameters.allowLocalEndpointReuse = true
         parameters.requiredLocalEndpoint = .hostPort(host: host, port: port)
 
+        let endpoint = "127.0.0.1:\(port.rawValue)"
         let listener = try NWListener(using: parameters, on: port)
         listener.newConnectionHandler = { [weak self] connection in
             self?.handle(connection)
         }
+        listener.stateUpdateHandler = { state in
+            TutorialDebugLog.shared.record("local_http_server.state", fields: [
+                "state": String(describing: state),
+                "endpoint": endpoint,
+            ])
+        }
         listener.start(queue: queue)
         self.listener = listener
+        TutorialDebugLog.shared.record("local_http_server.start.requested", fields: [
+            "endpoint": endpoint,
+            "event_dir": directoryURL.path,
+        ])
     }
 
     func stop() {
+        TutorialDebugLog.shared.record("local_http_server.stop", fields: [
+            "endpoint": "127.0.0.1:\(port.rawValue)",
+        ])
         listener?.cancel()
         listener = nil
     }
@@ -69,6 +87,10 @@ final class CodexLocalHTTPEventServer {
 
         let method = String(parts[0])
         let path = String(parts[1]).split(separator: "?", maxSplits: 1).first.map(String.init) ?? "/"
+        TutorialDebugLog.shared.record("local_http_server.request", fields: [
+            "method": method,
+            "path": path,
+        ])
 
         guard method == "GET" else {
             return httpResponse(status: "405 Method Not Allowed", contentType: "text/plain; charset=utf-8", body: Data("Method Not Allowed".utf8))
@@ -88,12 +110,22 @@ final class CodexLocalHTTPEventServer {
         do {
             let snapshot = try OPCodexEventFileCache.loadLatestStream(from: directoryURL)
             let body = try Data(contentsOf: snapshot.fileURL)
+            TutorialDebugLog.shared.record("local_http_server.latest_jsonl.ok", fields: [
+                "source": snapshot.fileURL.path,
+                "session_id": snapshot.sessionId,
+                "event_count": "\(snapshot.eventCount)",
+                "byte_count": "\(body.count)",
+            ])
             return httpResponse(
                 status: "200 OK",
                 contentType: "application/x-ndjson; charset=utf-8",
                 body: body
             )
         } catch {
+            TutorialDebugLog.shared.record("local_http_server.latest_jsonl.failed", fields: [
+                "event_dir": directoryURL.path,
+                "error": error.localizedDescription,
+            ])
             return httpResponse(
                 status: "404 Not Found",
                 contentType: "text/plain; charset=utf-8",

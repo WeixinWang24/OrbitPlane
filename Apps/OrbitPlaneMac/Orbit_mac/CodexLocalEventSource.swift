@@ -85,10 +85,18 @@ final class CodexLocalEventSource: ObservableObject {
     }
 
     func start() {
+        TutorialDebugLog.shared.record("event_source.start", fields: [
+            "http_endpoint": httpEndpointURL.absoluteString,
+            "event_dir": directoryURL.path,
+            "archive_dir": archiveDirectoryURL.path,
+        ])
         do {
             try localHTTPServer.start()
         } catch {
             self.transportStatus.lastHTTPError = "Local HTTP server failed to start: \(error.localizedDescription)"
+            TutorialDebugLog.shared.record("event_source.local_http_server_start.failed", fields: [
+                "error": error.localizedDescription,
+            ])
         }
 
         reload()
@@ -106,25 +114,38 @@ final class CodexLocalEventSource: ObservableObject {
     }
 
     func stop() {
+        TutorialDebugLog.shared.record("event_source.stop")
         subscriptionTask?.cancel()
         subscriptionTask = nil
         localHTTPServer.stop()
     }
 
     func reload() {
+        TutorialDebugLog.shared.record("event_source.reload.requested")
         Task {
             await refreshOnce()
         }
     }
 
     private func refreshOnce() async {
+        TutorialDebugLog.shared.record("event_source.refresh.begin", fields: [
+            "http_endpoint": httpEndpointURL.absoluteString,
+        ])
         do {
             let snapshot = try await loadHTTPSnapshotWithRetry()
             self.transportStatus.isFilesystemFallbackActive = false
             self.transportStatus.lastHTTPError = nil
             self.transportStatus.lastRefreshAt = Date()
+            TutorialDebugLog.shared.record("event_source.refresh.http.ok", fields: [
+                "session_id": snapshot.sessionId,
+                "event_count": "\(snapshot.eventCount)",
+                "source": snapshot.fileURL.absoluteString,
+            ])
             apply(snapshot, sourceKind: .localhostHTTP)
         } catch {
+            TutorialDebugLog.shared.record("event_source.refresh.http.failed", fields: [
+                "error": error.localizedDescription,
+            ])
             loadFilesystemFallback(httpError: error)
         }
     }
@@ -133,9 +154,17 @@ final class CodexLocalEventSource: ObservableObject {
         var lastError: Error?
         for attempt in 0..<4 {
             do {
+                TutorialDebugLog.shared.record("event_source.http_attempt.begin", fields: [
+                    "attempt": "\(attempt + 1)",
+                    "endpoint": httpEndpointURL.absoluteString,
+                ])
                 return try await loadHTTPSnapshot()
             } catch {
                 lastError = error
+                TutorialDebugLog.shared.record("event_source.http_attempt.failed", fields: [
+                    "attempt": "\(attempt + 1)",
+                    "error": error.localizedDescription,
+                ])
                 if attempt < 3 {
                     try? await Task.sleep(nanoseconds: 120_000_000)
                 }
@@ -170,6 +199,12 @@ final class CodexLocalEventSource: ObservableObject {
             snapshot: snapshot,
             directoryURL: archiveDirectoryURL
         )
+        TutorialDebugLog.shared.record("event_source.archive.persisted", fields: [
+            "session_id": snapshot.sessionId,
+            "latest": archiveResult.latestURL.path,
+            "snapshot": archiveResult.archivedURL?.path ?? "",
+            "new_snapshot": "\(archiveResult.didArchiveNewSnapshot)",
+        ])
         self.transportStatus.lastArchiveLatestPath = archiveResult.latestURL.path
         self.transportStatus.lastArchiveSnapshotPath = archiveResult.archivedURL?.path
         self.transportStatus.didArchiveNewSnapshot = archiveResult.didArchiveNewSnapshot
@@ -182,6 +217,12 @@ final class CodexLocalEventSource: ObservableObject {
             self.transportStatus.isFilesystemFallbackActive = true
             self.transportStatus.lastHTTPError = httpError.localizedDescription
             self.transportStatus.lastRefreshAt = Date()
+            TutorialDebugLog.shared.record("event_source.fallback.file_cache.ok", fields: [
+                "http_error": httpError.localizedDescription,
+                "session_id": snapshot.sessionId,
+                "event_count": "\(snapshot.eventCount)",
+                "source": snapshot.fileURL.path,
+            ])
             apply(snapshot, sourceKind: .fileCache)
         } catch {
             self.snapshot = nil
@@ -189,6 +230,11 @@ final class CodexLocalEventSource: ObservableObject {
             self.transportStatus.isFilesystemFallbackActive = true
             self.transportStatus.lastHTTPError = httpError.localizedDescription
             self.transportStatus.lastRefreshAt = Date()
+            TutorialDebugLog.shared.record("event_source.fallback.file_cache.failed", fields: [
+                "http_error": httpError.localizedDescription,
+                "file_error": error.localizedDescription,
+                "event_dir": directoryURL.path,
+            ])
             self.loadState = .failed("HTTP: \(httpError.localizedDescription); file cache: \(error.localizedDescription)")
         }
     }
@@ -198,10 +244,19 @@ final class CodexLocalEventSource: ObservableObject {
             self.snapshot = snapshot
             self.model = try CodexTutorialDisplayModel(projection: snapshot.projection, source: snapshot)
             self.loadState = .loaded(sourceKind)
+            TutorialDebugLog.shared.record("event_source.apply.ok", fields: [
+                "source_kind": sourceKind.rawValue,
+                "session_id": snapshot.sessionId,
+                "event_count": "\(snapshot.eventCount)",
+            ])
         } catch {
             self.snapshot = nil
             self.model = .dummy
             self.loadState = .failed(error.localizedDescription)
+            TutorialDebugLog.shared.record("event_source.apply.failed", fields: [
+                "error": error.localizedDescription,
+                "session_id": snapshot.sessionId,
+            ])
         }
     }
 }
