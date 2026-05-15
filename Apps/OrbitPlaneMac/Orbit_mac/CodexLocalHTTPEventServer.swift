@@ -217,14 +217,16 @@ final class CodexLocalHTTPEventServer {
 
     private func httpResponse(status: String, contentType: String, body: Data) -> Data {
         var response = Data()
-        response.append(Data("""
-        HTTP/1.1 \(status)\r
-        Content-Type: \(contentType)\r
-        Content-Length: \(body.count)\r
-        Cache-Control: no-store\r
-        Connection: close\r
-        \r
-        """.utf8))
+        let header = [
+            "HTTP/1.1 \(status)",
+            "Content-Type: \(contentType)",
+            "Content-Length: \(body.count)",
+            "Cache-Control: no-store",
+            "Connection: close",
+            "",
+            "",
+        ].joined(separator: "\r\n")
+        response.append(Data(header.utf8))
         response.append(body)
         return response
     }
